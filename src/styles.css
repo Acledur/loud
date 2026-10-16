@@ -37,7 +37,8 @@ button.link { border: 0; background: none; padding: 0; color: var(--acento); tex
 .campo em { font-style: normal; color: var(--suave); font-size: 13px; }
 .ctl > .campo { margin: 2px 0; }
 
-.laudo { position: sticky; top: 12px; background: var(--papel); border: 1px solid var(--linha); border-radius: 4px; padding: 12px; display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 24px); }
+.laudo { position: sticky; top: 12px; background: var(--papel); border: 1px solid var(--linha); border-radius: 4px; padding: 12px; display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 24px); overflow-y: auto; }
+.laudo > * { flex-shrink: 0; }
 .laudo .barra { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .laudo textarea { width: 100%; padding: 8px; border: 1px solid var(--linha); border-radius: 4px; resize: vertical; }
 .laudo textarea.rodape { min-height: 0; font: inherit; }
@@ -65,13 +66,19 @@ summary { cursor: pointer; color: var(--suave); font-size: 13px; }
 .editor p { margin: 0; min-height: 1.5em; }
 .editor mark { background: #ffe08a; color: #000; border-radius: 2px; }
 
+@page { size: A4; margin: 1cm 0; }
 @media print {
   body { background: #fff; }
   .topo, .cabecalho, .form, .laudo .barra, .laudo .nota, .laudo .alerta, .laudo .fmt, .laudo .acoes, .laudo details { display: none !important; }
   .corpo { display: block; padding: 0; }
-  .laudo { position: static; border: 0; padding: 0; max-height: none; }
+  .laudo { position: static; border: 0; padding: 0 2.5cm; max-height: none; gap: 0; min-height: 27.5cm; }
   .editor { border: 0; padding: 0; max-height: none; overflow: visible; font-size: 12pt; }
   .editor mark { background: none; }
+  /* logo no topo da 1ª página; endereço no fim da última (colado embaixo quando o laudo cabe numa página) */
+  .timbre { display: block; width: 100%; max-height: 3.9cm; object-fit: contain; }
+  .timbre.cab { object-position: left top; margin-bottom: 1cm; }
+  .timbre.rod { object-position: center bottom; margin-top: auto; }
+  .editor { margin-bottom: 1cm; }
 }
 
 .cab .cabcampos { display: grid; gap: 6px; margin-top: 6px; }
@@ -82,3 +89,12 @@ summary { cursor: pointer; color: var(--suave); font-size: 13px; }
 .cab input:disabled { opacity: .6; }
 fieldset.cf { border: 0; margin: 0; padding: 0; min-width: 0; }
 fieldset.cf:disabled { opacity: .45; }
+
+/* as imagens do cabeçalho/rodapé só aparecem na impressão; na tela, a prévia fica dentro do seletor */
+.timbre { max-width: 100%; height: auto; }
+@media screen { .timbre { display: none; } }
+.previa { display: block; max-width: 100%; max-height: 120px; object-fit: contain; object-position: left; border: 1px solid var(--linha); border-radius: 4px; background: #fff; }
+.semimg { color: var(--suave); font-size: 13px; font-style: normal; }
+.seletorimg { display: grid; gap: 4px; margin: 8px 0; }
+.seletorimg .acoes { flex-wrap: wrap; }
+.seletorimg .erro { color: var(--alerta); font-size: 13px; }

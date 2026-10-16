@@ -43,7 +43,6 @@ const DOPPLER_CISTO: Opc[] = [
   { r: 'sem vascularização interna detectável', t: ' Ao Doppler, não há vascularização interna detectável.' },
   { r: 'com vascularização interna', t: ' Ao Doppler, há vascularização interna, com índice de resistência de {ir}.' },
 ];
-const STATUS_HORMONAL = ops('menopausada', 'idade fértil');
 const DIMS_UTERO = dims('med', 'medidas uterinas (mm)', 3, [80, 40, 40]);
 const MIOMAS = [1, 2, 3, 4].map((n) => `ut.mioma${n}`);
 const SE_MIOMA = [...MIOMAS, 'ut.multimiomas'].join(',');
@@ -68,14 +67,13 @@ const ovario = (lado: 'direito' | 'esquerdo'): Secao => {
   return {
     id, titulo: `Ovário ${lado}`, ordem: lado === 'direito' ? 50 : 60,
     controles: [
-      esc(`${id}.status`, 'radio', STATUS_HORMONAL, { rotulo: 'Status hormonal', variavel: `status_${lado}` }),
       esc(`${id}.estado`, 'radio', [
         { r: 'normal', corpo: medidas, concl: `{=ovconcl:${id}}`, campos: [dims('med', 'medidas (mm)', 3, 20)] },
-        { r: 'não caracterizado', corpo: `Ovário ${lado} não caracterizado. Região anexial ${ladoF} sem evidências de massas ou coleções.` },
         { r: 'padrão multifolicular', corpo: `${medidas} Possui vários cistos de aspecto simples, medindo até {max|cm} cm, devendo corresponder a folículos.`,
           concl: `Ovário ${lado} com padrão multifolicular.`, campos: [dims('med', 'medidas (mm)', 3, 20), mm('max', 'folículos até (mm)', 15)] },
         { r: 'padrão policístico', corpo: `${medidas} Apresenta estroma hiperecogênico, alargado, e múltiplas imagens císticas anecogênicas com distribuição predominantemente periférica.`,
           concl: `Ovário ${lado} com padrão morfológico policístico.`, campos: [dims('med', 'medidas (mm)', 3, 20)] },
+        { r: 'não caracterizado', corpo: `Ovário ${lado} não caracterizado. Região anexial ${ladoF} sem evidências de massas ou coleções.` },
       ], { rotulo: 'Aspecto do ovário', ordem: 10 }),
       fixo(`${id}.parenquima`, 'O parênquima tem ecotextura homogênea.', { ordem: 15, suprimidoPor: [`${id}.estado`, ...cistos] }),
       cistoOvariano(lado, 1),
@@ -127,7 +125,7 @@ export const transvaginal: Exame = {
       ],
     },
     {
-      id: 'endo', titulo: 'Endométrio, cavidade uterina e endocérvice', ordem: 20, desativadoPor: SEM_UTERO,
+      id: 'endo', titulo: 'Endométrio, cavidade uterina e endocérvice', ordem: 20, desativadoPor: SEM_UTERO, umaPorLinha: true,
       controles: [
         // espessura e aspecto na mesma frase; a espessura vem marcada
         esc('endo.asp', 'radio', [
@@ -146,7 +144,7 @@ export const transvaginal: Exame = {
         chk('endo.cistos.retent', 'cistos de retenção no colo', 'Presença de cistos de retenção no colo uterino, de contornos regulares e conteúdo {aspecto}, o maior medindo {mm|cm} cm.', 'Cistos de retenção no colo uterino.', [mm('mm', 'maior cisto (mm)', 7), sel('aspecto', 'aspecto', ops('anecogênico', 'espesso'))], 80),
         // D.I.U.: linha própria no laudo (o \n inicial quebra a linha)
         chk('endo.diu.simples', 'D.I.U. bem posicionado (não citar medidas)', '\nD.I.U. bem posicionado.', 'D. I. U. na cavidade uterina.', undefined, 90),
-        chk('endo.diu', 'D.I.U. com medidas', '\nD. I. U. na cavidade uterina, distando {fundo|cm} cm da serosa fúndica e com {mucosa|cm} cm de mucosa livre.', 'D. I. U. na cavidade uterina.', [mm('fundo', 'distância da serosa (mm)', 15), mm('mucosa', 'mucosa livre (mm)', 4)], 91),
+        chk('endo.diu', 'D.I.U. com medidas', '\nD. I. U. na cavidade uterina, com {mucosa|cm} cm de mucosa livre e distando {fundo|cm} cm da serosa fúndica.', 'D. I. U. na cavidade uterina.', [mm('mucosa', 'mucosa livre (mm)', 4), mm('fundo', 'distância da serosa (mm)', 15)], 91),
       ],
     },
     ovario('direito'),

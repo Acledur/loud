@@ -7,16 +7,27 @@ import { transvaginal } from './exames/transvaginal';
 import { joelho } from './exames/joelho';
 import { abdomeSuperior } from './exames/abdomeSuperior';
 import { ombro } from './exames/ombro';
+import { mamas } from './exames/mamas';
+import { cotovelo } from './exames/cotovelo';
+import { partesMoles } from './exames/partesMoles';
+import { obstetrico1, obstetrico2 } from './exames/obstetricia';
 import { contarPendencias, desativados, gerarLaudo, respInicial } from './gerador';
 import { htmlParaCopia, htmlParaRtf, linhasParaHtml } from './rico';
 import type { Resp } from './tipos';
 import SecaoCard from './componentes/SecaoCard';
+import SeletorImagem from './componentes/SeletorImagem';
+import { IMG_CAB_PADRAO, IMG_ROD_PADRAO } from './imagens';
 
 // Único dado salvo no navegador: o rodapé (nome/CRM). Nada de paciente é gravado.
 const CHAVE = 'laudos-us:rodape';
 const lerRodape = () => { try { return localStorage.getItem(CHAVE) ?? ''; } catch { return ''; } };
+// Imagens do cabeçalho/rodapé (logo da clínica, não é dado de paciente): sem chave = padrão; '-' = sem imagem.
+const CHAVE_CAB = 'laudos-us:img-cab';
+const CHAVE_ROD = 'laudos-us:img-rod';
+const lerImg = (k: string, padrao: string) => { try { const v = localStorage.getItem(k); return v === null ? padrao : v === '-' ? '' : v; } catch { return padrao; } };
+const gravarImg = (k: string, v: string, padrao: string) => { try { if (v === padrao) localStorage.removeItem(k); else localStorage.setItem(k, v || '-'); } catch { /* ignora */ } };
 
-const EXAMES = [abdomeTotal, abdomeSuperior, apUrinario, prostata, tireoide, transvaginal, joelho, ombro]; // novos exames entram aqui
+const EXAMES = [abdomeTotal, abdomeSuperior, apUrinario, prostata, tireoide, mamas, transvaginal, obstetrico1, obstetrico2, joelho, ombro, cotovelo, partesMoles]; // novos exames entram aqui
 const FMT: [string, string, string][] = [
   ['bold', 'N', 'Negrito'], ['italic', 'I', 'Itálico'],
   ['justifyLeft', 'Esq.', 'Alinhar à esquerda'], ['justifyCenter', 'Centro', 'Centralizar'],
@@ -28,13 +39,15 @@ const hojeBR = () => {
   const p = (n: number) => String(n).padStart(2, '0');
   return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
 };
-const cab0 = () => ({ pac: '', data: hojeBR(), med: '' });
+const cab0 = () => ({ pac: '', nasc: '', data: hojeBR(), med: '' });
 
 export default function App() {
   const [exame, setExame] = useState(EXAMES[0]);
   const [resp, setResp] = useState<Resp>(() => respInicial(EXAMES[0]));
   const [editado, setEditado] = useState(false);
   const [rodape, setRodape] = useState(lerRodape);
+  const [imgCab, setImgCab] = useState(() => lerImg(CHAVE_CAB, IMG_CAB_PADRAO));
+  const [imgRod, setImgRod] = useState(() => lerImg(CHAVE_ROD, IMG_ROD_PADRAO));
   const [cab, setCab] = useState(cab0); // a data já vem preenchida com o dia de hoje
   const [aviso, setAviso] = useState('');
   const [pend, setPend] = useState(0);
@@ -42,9 +55,10 @@ export default function App() {
 
   const dataExame = cab.data;
   const cabecalho = [
-    cab.pac && `Paciente: ${cab.pac}`,
-    dataExame && `Data do exame: ${dataExame}`,
-    cab.med && `Médico solicitante: ${cab.med}`,
+    cab.pac && `NOME: ${cab.pac}`,
+    cab.nasc && `DATA DE NASCIMENTO: ${cab.nasc}`,
+    cab.med && `MÉDICO SOLICITANTE: ${cab.med}`,
+    dataExame && `DATA DO EXAME: ${dataExame}`,
   ].filter(Boolean).join('\n');
 
   const off = useMemo(() => desativados(exame, resp), [exame, resp]);
@@ -60,6 +74,8 @@ export default function App() {
   }, [html, editado]);
   useEffect(() => { document.execCommand('defaultParagraphSeparator', false, 'p'); }, []);
   useEffect(() => { try { localStorage.setItem(CHAVE, rodape); } catch { /* ignora */ } }, [rodape]);
+  useEffect(() => gravarImg(CHAVE_CAB, imgCab, IMG_CAB_PADRAO), [imgCab]);
+  useEffect(() => gravarImg(CHAVE_ROD, imgRod, IMG_ROD_PADRAO), [imgRod]);
   useEffect(() => {
     if (!editado) return;
     const h = (e: BeforeUnloadEvent) => e.preventDefault();
@@ -127,7 +143,7 @@ export default function App() {
 
   // Alternativa que garante o alinhamento: arquivo RTF, que o Word abre direto.
   function baixarRtf() {
-    const blob = new Blob([htmlParaRtf(ed.current!)], { type: 'application/rtf' });
+    const blob = new Blob([htmlParaRtf(ed.current!, { cab: imgCab, rod: imgRod })], { type: 'application/rtf' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'laudo.rtf';
@@ -159,10 +175,15 @@ export default function App() {
           </div>
           {editado && <p className="nota">Texto editado manualmente: mudanças no formulário não alteram este texto até você voltar ao automático.</p>}
           {pend > 0 && <p className="alerta">{pend} pendência(s) entre colchetes no texto.</p>}
+          <details className="imgsel">
+            <summary>Imagem do cabeçalho (logo; salva neste navegador)</summary>
+            <SeletorImagem rotulo="Cabeçalho" valor={imgCab} padrao={IMG_CAB_PADRAO} onChange={setImgCab} />
+          </details>
           <details className="cab">
             <summary>Cabeçalho (paciente, data do exame, solicitante; não é salvo)</summary>
             <div className="cabcampos">
               <label>Paciente<input value={cab.pac} onChange={(e) => setCab({ ...cab, pac: e.target.value })} /></label>
+              <label>Data de nascimento<input value={cab.nasc} placeholder="dd/mm/aaaa" onChange={(e) => setCab({ ...cab, nasc: e.target.value })} /></label>
               <label>Data do exame
                 <input value={dataExame} placeholder="dd/mm/aaaa" onChange={(e) => setCab({ ...cab, data: e.target.value })} />
               </label>
@@ -177,8 +198,10 @@ export default function App() {
               </button>
             ))}
           </div>
+          {imgCab && <img className="timbre cab" src={imgCab} alt="" />} {/* só aparece na impressão */}
           <div ref={ed} className="editor" contentEditable suppressContentEditableWarning spellCheck={false}
             aria-label="Texto do laudo" onInput={() => { setEditado(true); lerPend(); }} />
+          {imgRod && <img className="timbre rod" src={imgRod} alt="" />} {/* só aparece na impressão */}
           <div className="acoes">
             <button type="button" className="primario" onClick={copiar}>Copiar laudo</button>
             <button type="button" onClick={() => window.print()}>Imprimir</button>
@@ -189,6 +212,10 @@ export default function App() {
             <summary>Rodapé (nome e CRM, salvo neste navegador)</summary>
             <textarea className="rodape" rows={3} value={rodape} onChange={(e) => setRodape(e.target.value)}
               placeholder={'Dr(a). Nome\nMédico(a) - CRM/UF 00000'} />
+          </details>
+          <details className="imgsel">
+            <summary>Imagem do rodapé (endereço; salva neste navegador)</summary>
+            <SeletorImagem rotulo="Rodapé" valor={imgRod} padrao={IMG_ROD_PADRAO} onChange={setImgRod} />
           </details>
         </aside>
       </main>

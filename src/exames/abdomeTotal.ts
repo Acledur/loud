@@ -363,19 +363,26 @@ export const S: Record<string, Secao> = Object.fromEntries(secoes.map((x) => [x.
 /** Mesma seção com outra posição no laudo. */
 export const com = (x: Secao, ordem: number): Secao => ({ ...x, ordem });
 
-export const volpre: Secao = {
-  id: 'volpre', titulo: 'Volume vesical pré-miccional', ordem: 81,
-  controles: [chk('volpre.on', 'citar volume pré-miccional', 'Volume vesical pré-miccional estimado em {v|ml} ml.', undefined, [dims('v', 'medidas', 3, 80)])],
-};
+/** Controles do resíduo pós-miccional: a classificação (ausente / desprezível / moderado / acentuado) vem do volume. */
+const controlesResid = (comConcl: boolean, marcado: boolean, ordem: number): Controle[] => [
+  { ...chk('resid.on', 'citar resíduo pós-miccional', 'Resíduo vesical pós-miccional {=residuo}.',
+      comConcl ? 'Resíduo vesical pós-miccional {=residuo}.' : undefined, [dims('v', 'medidas (mm)', 3, 0)], ordem), marcado },
+  // nos exames sem conclusão fixa do resíduo, ele entra no ID só quando passa de 40 ml
+  ...(comConcl ? [] : [fixo('resid.alto', '', { ordem: 90, concl: 'Resíduo vesical pós-miccional {=residuo}.', vol: { ctl: 'resid.on', campo: 'v', op: '>' as const, limite: 40 } })]),
+];
 
-/** Resíduo pós-miccional: a classificação (ausente / desprezível / moderado / acentuado) vem do volume. */
+/** Só o resíduo pós-miccional (usado na próstata). */
 export const resid = (ordem: number, comConcl: boolean, marcado: boolean): Secao => ({
   id: 'resid', titulo: 'Resíduo pós-miccional', ordem,
+  controles: controlesResid(comConcl, marcado, 0),
+});
+
+/** Volume vesical: pré-miccional + resíduo pós-miccional no mesmo box (cada um em sua linha no laudo). */
+export const volves = (ordem: number, comConcl: boolean, marcado: boolean): Secao => ({
+  id: 'volves', titulo: 'Volume vesical', ordem, umaPorLinha: true,
   controles: [
-    { ...chk('resid.on', 'citar resíduo pós-miccional', 'Resíduo vesical pós-miccional {=residuo}.',
-        comConcl ? 'Resíduo vesical pós-miccional {=residuo}.' : undefined, [dims('v', 'medidas (mm)', 3, 0)]), marcado },
-    // nos exames sem conclusão fixa do resíduo, ele entra no ID só quando passa de 40 ml
-    ...(comConcl ? [] : [fixo('resid.alto', '', { ordem: 90, concl: 'Resíduo vesical pós-miccional {=residuo}.', vol: { ctl: 'resid.on', campo: 'v', op: '>' as const, limite: 40 } })]),
+    chk('volpre.on', 'citar volume pré-miccional', 'Volume vesical pré-miccional estimado em {v|ml} ml.', undefined, [dims('v', 'medidas', 3, 80)], 0),
+    ...controlesResid(comConcl, marcado, 10),
   ],
 });
 
@@ -383,5 +390,5 @@ export const abdomeTotal: Exame = {
   id: 'abdome-total',
   titulo: 'Abdome total',
   tituloLaudo: 'ULTRASSONOGRAFIA DO ABDOME TOTAL',
-  secoes: [...secoes.slice(0, -1), volpre, resid(82, false, false), secoes[secoes.length - 1]],
+  secoes: [...secoes.slice(0, -1), volves(81, false, false), secoes[secoes.length - 1]],
 };

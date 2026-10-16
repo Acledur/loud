@@ -15,8 +15,8 @@ npm run build      # gera a pasta dist/ (site estático; inclui CSP que bloqueia
 
 ## Exames
 
-Abdome total, Abdome superior, Aparelho urinário, Próstata, Tireoide, US pélvica transvaginal, Joelho e Ombro.
-Joelho e Ombro são unilaterais: o seletor "Lado examinado" (direito/esquerdo) no topo define o título do laudo;
+Abdome total, Abdome superior, Aparelho urinário, Próstata, Tireoide, Mamas, Transvaginal, Obstétrica 1º trimestre, Obstétrica 2º/3º trimestre, Joelhos, Ombros, Cotovelos e Partes moles.
+Joelhos, Ombros e Cotovelos são unilaterais: o seletor "Lado examinado" (direito/esquerdo) no topo define o título do laudo;
 no joelho o lado não escolhido some da tela.
 Novo exame = novo arquivo em `src/exames/` combinando seções (`com(S.rins, 10)`) e acrescentando seções próprias;
 depois, incluí-lo em `EXAMES` (`src/App.tsx`).
@@ -42,7 +42,9 @@ depois, incluí-lo em `EXAMES` (`src/App.tsx`).
 - `suprimidoPor` / `apenasSe`: fazem uma frase normal sumir (ou só aparecer) conforme outros controles
 - `desativadoPor` (controle ou seção): fica cinza e não escreve nada (ex.: tireoidectomia desativa as medidas da tireoide)
 - `desativadoPor: ['idDaEscolha=idDaOpção']` desativa conforme a opção escolhida (usado no seletor de lado do joelho)
-- Exame: `tituloVar` (título conforme uma escolha) e `restante` (frase final do ID quando há achados)
+- Exame: `idNormal` (ID quando não há achados; padrão "detectáveis"), `tituloVar` (título conforme uma escolha) e `restante` (frase final do ID quando há achados)
+- Obstétricos: medidas e IG começam em branco ([PREENCHER]); ILA (VR 8–24) é calculado em `gerador.ts` (`ila`, `ilaconcl`, `rum`); `umaPorLinha` (seção) e `obs` (exame) controlam linhas e avisos finais
+- Mamas: horário → quadrante e texto/ID dos nódulos em `src/mamasCalc.ts`; Exame `fim` = linhas depois do ID (BI-RADS)
 - Controle `grupo`: junta vários Checks marcados numa frase ou lista ("dois nódulos ... situados A e B")
 - `[PREENCHER]` aparece sozinho quando falta um campo obrigatório. Qualquer texto entre colchetes com
   `PREENCHER` ou `REVISAR` faz o app avisar antes de copiar.
@@ -60,23 +62,31 @@ depois, incluí-lo em `EXAMES` (`src/App.tsx`).
 
 ## Cabeçalho, formatação e Word
 
-- Cabeçalho (paciente, data do exame, solicitante): fica recolhido acima do editor, entra no topo do laudo à esquerda em negrito e **não é salvo**.
+- Cabeçalho (nome, data de nascimento, solicitante, data do exame): fica recolhido acima do editor, entra no topo do laudo à esquerda em negrito e **não é salvo**.
   A data já vem preenchida com o dia de hoje (editável; o link "usar data de hoje" restaura).
-- Título centralizado em negrito; "ID:" em negrito; rodapé (nome/CRM) à direita em negrito.
+- Título centralizado em negrito; "ID:" em negrito; rodapé (nome/CRM) à esquerda em negrito.
 - O laudo é um editor: selecione o texto e use N, I, Esq., Centro, Dir., Just.
 - **Copiar laudo** leva a formatação; ao colar no Word use "Manter Formatação de Origem".
   Se o alinhamento não vier, use **Baixar .rtf (Word)**: o Word abre o arquivo com alinhamento, negrito e itálico.
 
+## Imagens do cabeçalho e do rodapé (logo e endereço)
+
+- Padrão: `src/imagens.ts` (PNGs embutidos em base64, para funcionar sem rede). Para trocar o padrão, substitua as duas constantes.
+- Na tela, "Imagem do cabeçalho" (acima dos campos do cabeçalho) e "Imagem do rodapé" (abaixo dos campos do rodapé): cada uma é um bloco recolhível que traz a prévia junto com o envio da imagem — ao recolher, a prévia some. Enviar outra imagem (qualquer formato; vira PNG), "usar padrão" ou "sem imagem". A escolha fica salva no navegador.
+- **Imprimir / salvar em PDF**: logo no topo da 1ª página e endereço no fim da última (colado embaixo se o laudo cabe em uma página). Desative "Cabeçalhos e rodapés" na janela de impressão.
+- **Baixar .rtf**: imagens entram como cabeçalho/rodapé de cada página (16 cm de largura, no máx. 3,9 cm de altura).
+- **Copiar laudo** copia só o texto (o Word não aceita imagens coladas como cabeçalho/rodapé).
+
 ## Privacidade
 
 - Nada é enviado: o build inclui Content-Security-Policy com `connect-src 'none'`.
-- Só o rodapé (nome/CRM) é salvo, no `localStorage`. Paciente e data só existem na tela.
+- Só o rodapé (nome/CRM) e as imagens do cabeçalho/rodapé (logo da clínica) são salvos, no `localStorage`. Paciente, nascimento e data só existem na tela.
 
 ## Pendências conhecidas
 
 - Doppler renal, duplo J, "+ ureteral", sistema porta
-- Ombro: seções "ventre" dos músculos (aparecem nos prints, sem conteúdo visível) e itens abaixo da acromioclavicular; revisar as frases de bíceps (rotura parcial/longitudinal/luxação) e de retração
+- Ombro: tendão do redondo menor (não incluído, como no laudo de referência); seções "ventre" dos músculos (aparecem nos prints, sem conteúdo visível) e itens abaixo da acromioclavicular; revisar as frases de bíceps (rotura parcial/longitudinal/luxação) e de retração
 - Tireoide: PAAF, TI-RADS final, Doppler das artérias tireoideanas
 - Transvaginal: D.U.M., gesta, pesquisa de endometriose
 - Abdome total + pelve, aparelho urinário + pelve e demais combinações
-- Exames: mamas, testículos, obstétrico, partes moles, musculoesquelético
+- Exames: mamas, testículos, obstétrico, musculoesquelético

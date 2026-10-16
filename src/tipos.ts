@@ -91,6 +91,7 @@ export type Secao = {
   // Se a conclusão tiver "<base> à direita." e "<base> à esquerda.", vira uma linha só (resultado).
   bilateral?: { base: string; resultado: string }[];
   omitirSe?: string | string[];  // não gera parágrafo se algum destes ids estiver "alterado"
+  umaPorLinha?: boolean;         // cada frase da seção em uma linha própria (em vez de juntas no parágrafo)
   ocultaSeOff?: boolean;         // se a seção estiver desativada, some da tela (em vez de ficar cinza)
 };
 
@@ -99,6 +100,9 @@ export type Exame = {
   titulo: string;       // nome no menu
   tituloLaudo: string;  // título impresso no laudo
   semRestante?: boolean; // true: o ID não termina com "Restante do exame sem particularidades."
+  obs?: string[];        // observações impressas depois do ID (ex.: aviso dos exames obstétricos)
+  fim?: string[];        // linhas finais do ID, depois do "Restante..." (aceita {=val:idDoControle}), ex.: BI-RADS
+  idNormal?: string;     // ID quando não há achados (padrão: "Exame sem anormalidades detectáveis pelo método.")
   restante?: string;     // frase final do ID quando há achados (padrão: "Restante do exame sem particularidades.")
   // Título do laudo conforme a opção de uma escolha (ex.: seletor direito/esquerdo). Chave = id da opção.
   tituloVar?: { ctl: string; opcoes: Record<string, string> };

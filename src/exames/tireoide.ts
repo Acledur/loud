@@ -30,7 +30,6 @@ const opcional = (rs: string[], frase: (r: string) => string): Opc[] =>
 const VASC = opcional(['periférica e central', 'periférica', 'central'], (r) => ` Ao Doppler a vascularização é ${r}.`);
 const IR = opcional(['0,60', '0,65', '0,70', '0,75'], (r) => ` Índice de resistividade de ${r}.`);
 const TIRADS = opcional(['1', '2', '3', '4', '5'], (r) => ` Classificação TI-RADS: ${r}.`);
-const TOMIMORI = opcional(['I', 'II', 'III', 'IV'], (r) => ` Classificação Tomimori: ${r}.`);
 const CALC_NODULO: Opc[] = [
   { r: 'não citar', t: '' },
   { r: 'sem calcificações', t: ', sem calcificações' },
@@ -61,7 +60,7 @@ const SE_ACHADOS = ACHADOS.join(',');
 
 const nodulo = (n: number): Check => ({
   tipo: 'check', id: `nodulos.n${n}`, rotulo: `Descrever Nódulo ${n}`, ordem: n,
-  item: `N${n}: {local}, nódulo {composicao} {eco}, de contornos {contornos}{aspecto}{calc}, medindo {med} cm.{vasc}{ir}{tirads}{tomimori}{paaf}`,
+  item: `N${n}: {local}, nódulo {composicao} {eco}, de contornos {contornos}{aspecto}{calc}, medindo {med} cm.{vasc}{tirads}{paaf}`,
   campos: [
     dims('med', 'medidas (mm)', 3, 10),
     sel('composicao', 'composição', COMPOSICAO),
@@ -71,9 +70,7 @@ const nodulo = (n: number): Check => ({
     sel('aspecto', 'aspecto', ASPECTO),
     sel('calc', 'calcificações', CALC_NODULO),
     sel('vasc', 'vascularização', VASC),
-    sel('ir', 'índice de resistividade', IR),
     sel('tirads', 'TI-RADS', TIRADS),
-    sel('tomimori', 'Tomimori', TOMIMORI),
     sel('paaf', 'PAAF', paaf(n)),
   ],
 });
@@ -118,7 +115,7 @@ const secoes: Secao[] = [
         conclVarios: 'Nódulos tireoidianos {lado}.',
       },
       chk('nodulos.multiplos', 'Descrever Múltiplos Nódulos',
-        'Múltiplos nódulos tireoidianos, medindo até {dir} mm à direita e até {esq} mm à esquerda, de aspecto {composicao}, {eco} e contornos {contornos}.{vasc}{ir}',
+        'Múltiplos nódulos tireoidianos, medindo até {dir} mm à direita e até {esq} mm à esquerda, de aspecto {composicao}, {eco} e contornos {contornos}.{vasc}',
         'Bócio multinodular.',
         [
           mm('dir', 'maior diâmetro à direita'),
@@ -127,11 +124,7 @@ const secoes: Secao[] = [
           sel('eco', 'ecogenicidade', ops('hipoecogênicos', 'isoecogênicos', 'hiperecogênicos', 'anecogênicos')),
           sel('contornos', 'contornos', CONTORNOS),
           sel('vasc', 'vascularização', VASC),
-          sel('ir', 'índice de resistividade', IR),
         ], 40),
-      chk('tireoide.paaf', 'punção aspirativa com agulha fina (PAAF)',
-        'Foi efetuada punção aspirativa com agulha fina da alteração observada, com coleta de material para análise. Não houve intercorrências.',
-        'Realizada punção aspirativa com agulha fina (PAAF).', undefined, 50),
       esc('tireoide.tiradsFinal', 'select', [
         { r: 'não citar' },
         ...['1', '2', '3', '4', '5'].map((n) => ({ r: `TI-RADS ${n}`, corpo: `Classificação final com base no "Thyroid Imaging Reporting & Data System" (TI-RADS): ${n}.` })),

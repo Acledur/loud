@@ -1,4 +1,6 @@
 import type { Campo, Check, Controle, Escolha, Exame, Grupo, Linha, Opc, Resp } from './tipos';
+import { calculosMama } from './mamasCalc';
+import { calculosCotovelo } from './exames/cotovelo';
 
 export const PENDENCIA = /\[(PREENCHER|REVISAR)[^\]]*\]/g;
 export const contarPendencias = (t: string) => t.match(PENDENCIA)?.length ?? 0;
@@ -134,7 +136,26 @@ function sufixoOm(r: Resp, k: string): string | null {
   return null;
 }
 
+// Líquido amniótico (obstetrícia): ILA em cm, referência 8–24. Em branco = quantidade adequada, sem citar valor.
+const ILA_MIN = 8, ILA_MAX = 24;
+const ilaVal = (r: Resp, a = '') => ({ raw: String(r[a] ?? '').trim(), v: num(r[a]) });
+
 const CALCULOS: Record<string, (r: Resp, arg?: string) => string> = {
+  ...calculosMama,
+  ...calculosCotovelo,
+  ila: (r, a) => {
+    const { raw, v } = ilaVal(r, a);
+    if (!raw) return 'Líquido amniótico em quantidade adequada para a atual fase gestacional.';
+    if (!Number.isFinite(v)) return '[PREENCHER]';
+    const q = v < ILA_MIN ? 'reduzida para a idade gestacional' : v > ILA_MAX ? 'aumentada para a atual idade gestacional' : 'adequada para a atual fase gestacional';
+    return `Líquido amniótico em quantidade ${q} (ILA: ${raw.replace('.', ',')} cm, VR: ${ILA_MIN}-${ILA_MAX}).`;
+  },
+  ilaconcl: (r, a) => { const { v } = ilaVal(r, a); return !Number.isFinite(v) ? '' : v < ILA_MIN ? 'Oligoâmnio.' : v > ILA_MAX ? 'Polidrâmnio.' : ''; },
+  // relação umbilical/cerebral média = IP da art. umbilical ÷ IP da cerebral média
+  rum: (r) => {
+    const a = num(r['ob2.dop.au_ip']), c = num(r['ob2.dop.acm_ip']);
+    return Number.isFinite(a) && Number.isFinite(c) && c > 0 ? (a / c).toFixed(2).replace('.', ',') : '[PREENCHER]';
+  },
   tendnorm: (r, a) => {
     const n = MANGUITO.filter((t) => normalOm(r, t.k));
     if (!n.length || n[0].k !== a) return '';
@@ -169,9 +190,9 @@ function expande(tpl: string, campos: Campo[], ctlId: string, r: Resp, vars: Rec
   const pre = tpl
     .replace(/\{=(\w+)(?::([\w.]+))?\}/g, (_, n: string, a?: string) => CALCULOS[n]?.(r, a) ?? '[PREENCHER]')
     // {?id1,id2?texto}: texto só se algum destes controles estiver alterado
-    .replace(/\{\?([\w.,]+)\?([^{}]*)\}/g, (_, ids: string, t: string) => (ids.split(',').some((x) => ATIVOS.has(x)) ? t : ''))
+    .replace(/\{\?([\w.,=]+)\?([^{}]*)\}/g, (_, ids: string, t: string) => (ids.split(',').some((x) => ATIVOS.has(x)) ? t : ''))
     // {!id1,id2!texto}: texto só se NENHUM destes controles estiver alterado
-    .replace(/\{!([\w.,]+)!([^{}]*)\}/g, (_, ids: string, t: string) => (ids.split(',').some((x) => ATIVOS.has(x)) ? '' : t));
+    .replace(/\{!([\w.,=]+)!([^{}]*)\}/g, (_, ids: string, t: string) => (ids.split(',').some((x) => ATIVOS.has(x)) ? '' : t));
   return pre.replace(/\{(\w+)(?:\|(\w+))?\}/g, (_, nome: string, fmt?: string) => {
     if (nome in vars) return vars[nome];
     const c = campos.find((x) => x.id === nome);
@@ -324,7 +345,7 @@ export function gerarLaudo(ex: Exame, r: Resp, opts: { cabecalho?: string; rodap
     });
     frags.sort((a, b) => a.ordem - b.ordem);
 
-    const p = frags.map((f) => f.txt).filter(Boolean).join(' ');
+    const p = frags.map((f) => f.txt).filter(Boolean).join(sec.umaPorLinha ? '\n' : ' ');
     // \n dentro de uma frase = quebra de linha (ex.: lista "Dimensões renais:")
     paragrafos.push(...p.split('\n').map((x) => x.trim()).filter(Boolean));
     let cs = frags.flatMap((f) => f.concl).filter(Boolean);
@@ -341,7 +362,7 @@ export function gerarLaudo(ex: Exame, r: Resp, opts: { cabecalho?: string; rodap
   }
 
   const unicas = [...new Set(concl)];
-  const id = unicas.length ? [...unicas, ...(ex.semRestante ? [] : [ex.restante ?? 'Restante do exame sem particularidades.'])] : ['Exame sem anormalidades detectáveis pelo método.'];
+  const id = unicas.length ? [...unicas, ...(ex.semRestante ? [] : [ex.restante ?? 'Restante do exame sem particularidades.'])] : [ex.idNormal ?? 'Exame sem anormalidades detectáveis pelo método.'];
   const lista = (t?: string) => (t ?? '').split('\n').map((x) => x.trim()).filter(Boolean);
   const cab = lista(opts.cabecalho);
   const rod = lista(opts.rodape);
@@ -353,7 +374,9 @@ export function gerarLaudo(ex: Exame, r: Resp, opts: { cabecalho?: string; rodap
   linhas.push({ t: titulo, a: 'center', b: true }, vazia);        // título: centralizado, negrito
   paragrafos.forEach((t) => linhas.push({ t, a: 'justify' }));
   linhas.push(vazia, { t: 'ID:', a: 'left', b: true });                   // "ID:" em negrito
-  id.forEach((t) => linhas.push({ t, a: 'justify' }));
-  if (rod.length) linhas.push(vazia, vazia, ...rod.map((t): Linha => ({ t, a: 'right', b: true }))); // rodapé: direita, negrito
+  const fim = (ex.fim ?? []).map((t) => t.replace(/\{=val:([\w.]+)\}/g, (_, k: string) => String(r[k] ?? '')));
+  [...id, ...fim].forEach((t) => linhas.push({ t, a: 'justify' }));
+  if (ex.obs?.length) linhas.push(vazia, ...ex.obs.map((t): Linha => ({ t, a: 'justify' })));
+  if (rod.length) linhas.push(vazia, vazia, ...rod.map((t): Linha => ({ t, a: 'left', b: true }))); // rodapé: esquerda, negrito
   return { texto: linhas.map((l) => l.t).join('\n'), linhas, paragrafos, conclusoes: id };
 }

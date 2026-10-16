@@ -8,6 +8,10 @@ import { transvaginal } from './exames/transvaginal';
 import { joelho } from './exames/joelho';
 import { abdomeSuperior } from './exames/abdomeSuperior';
 import { ombro } from './exames/ombro';
+import { mamas } from './exames/mamas';
+import { cotovelo } from './exames/cotovelo';
+import { partesMoles } from './exames/partesMoles';
+import { obstetrico1, obstetrico2 } from './exames/obstetricia';
 import { linhasParaHtml } from './rico';
 
 const gerar = (o = {}, rodape = '') => gerarLaudo(ex, { ...respInicial(ex), ...o }, { rodape }).texto;
@@ -156,11 +160,11 @@ describe('casos de referência', () => {
 
 describe('cabeçalho, rodapé e formatação', () => {
   const g = gerarLaudo(ex, respInicial(ex), { cabecalho: 'Paciente: Fulano\nMédico solicitante: Dr. X', rodape: 'Dr. Y\nCRM 1' });
-  it('cabeçalho à esquerda e em negrito; título centralizado; rodapé à direita', () => {
+  it('cabeçalho à esquerda e em negrito; título centralizado; rodapé à esquerda', () => {
     expect(g.linhas.slice(0, 2)).toEqual([{ t: 'Paciente: Fulano', a: 'left', b: true }, { t: 'Médico solicitante: Dr. X', a: 'left', b: true }]);
     expect(g.linhas.find((l) => l.t.startsWith('ULTRASSONOGRAFIA'))).toEqual({ t: 'ULTRASSONOGRAFIA DO ABDOME TOTAL', a: 'center', b: true });
     expect(g.linhas.find((l) => l.t === 'ID:')).toEqual({ t: 'ID:', a: 'left', b: true });
-    expect(g.linhas.slice(-2)).toEqual([{ t: 'Dr. Y', a: 'right', b: true }, { t: 'CRM 1', a: 'right', b: true }]);
+    expect(g.linhas.slice(-2)).toEqual([{ t: 'Dr. Y', a: 'left', b: true }, { t: 'CRM 1', a: 'left', b: true }]);
   });
   it('sem cabeçalho, o laudo começa pelo título', () => {
     expect(gerar().startsWith('ULTRASSONOGRAFIA DO ABDOME TOTAL\n\n')).toBe(true);
@@ -229,7 +233,7 @@ describe('rins: bilateral e padrões', () => {
 });
 
 // ---------- guardas para TODOS os exames ----------
-const TODOS = [ex, abdomeSuperior, apUrinario, prostata, tireoide, transvaginal, joelho, ombro];
+const TODOS = [ex, abdomeSuperior, apUrinario, prostata, tireoide, transvaginal, joelho, ombro, obstetrico1, obstetrico2, mamas, cotovelo, partesMoles];
 const marcaTudo = (e: typeof ex) => {
   const r: Record<string, string | number | boolean> = { ...respInicial(e) };
   for (const s of e.secoes) for (const c of s.controles) if (c.tipo === 'check') {
@@ -241,12 +245,13 @@ const marcaTudo = (e: typeof ex) => {
   return r;
 };
 describe('todos os exames', () => {
-  for (const e of TODOS) {
+  for (const e of TODOS.filter((x) => !x.id.startsWith('obstetrico'))) { // (obstétricos: medidas em branco de propósito; ver abaixo)
     it(`${e.id}: padrão não tem pendências`, () => {
       const t = gerarLaudo(e, respInicial(e)).texto;
       expect(contarPendencias(t)).toBe(0);
       // (a próstata tem ID próprio por volume)
-      if (e.id !== 'prostata') expect(t).toContain('Exame sem anormalidades detectáveis pelo método.');
+      if (e.id === 'partes-moles') expect(t).toContain('Exame sem anormalidades demonstráveis pelo método.');
+      else if (e.id !== 'prostata') expect(t).toContain('Exame sem anormalidades detectáveis pelo método.');
     });
     it(`${e.id}: com todas as caixas marcadas não sobra {token}, "não citar" nem [PREENCHER]`, () => {
       const t = gerarLaudo(e, marcaTudo(e)).texto;
@@ -360,7 +365,7 @@ describe('transvaginal', () => {
       'ULTRASSONOGRAFIA PÉLVICA TRANSVAGINAL', '',
       'Útero em anteversoflexão, com dimensões normais, medindo 10,0 x 4,0 x 4,0 cm, com volume de 83,7 cm³. Apresenta contornos lobulados e ecotextura heterogênea à custa de dois nódulos miometriais hipoecogênicos situados na parede fúndica (subseroso com 1,5 x 1,5 cm) e na parede corporal posterior (intramural com 1,2 x 1,2 cm).',
       'Endométrio com espessura de 0,4 cm, de aspecto heterogêneo, apresentando pequenas imagens císticas anecogênicas de permeio.',
-      'D. I. U. na cavidade uterina, distando 1,5 cm da serosa fúndica e com 0,4 cm de mucosa livre.',
+      'D. I. U. na cavidade uterina, com 0,4 cm de mucosa livre e distando 1,5 cm da serosa fúndica.',
       'Ovário direito com contornos regulares, medindo 2,0 x 2,0 x 2,0 cm, com volume de 4,2 cm³. Presença de duas imagens assim caracterizadas:',
       '- imagem cística de contornos regulares, contendo septações finas em "rendilhado" e líquido com debris, medindo 2,5 cm.',
       '- imagem cística com conteúdo anecogênico e contornos regulares, medindo 1,0 cm.',
@@ -396,28 +401,28 @@ describe('joelho (seletor de lado)', () => {
   it('padrão: joelho direito, só o lado escolhido aparece; colaterais numa frase só', () => {
     const t = gj();
     expect(t).toContain('ULTRASSONOGRAFIA DO JOELHO DIREITO');
-    expect(t).toContain('Ausência de derrame articular no joelho direito.');
-    expect(t).toContain('Ligamentos colateral tibial e fibular do joelho direito com ecotextura, espessura e contornos preservados.');
-    expect(t).not.toContain('Ligamento colateral tibial do joelho');
+    expect(t).toContain('Ausência de derrame articular.');
+    expect(t).toContain('Ligamentos colateral tibial e fibular com ecotextura, espessura e contornos preservados.');
+    expect(t).not.toContain('Ligamento colateral tibial com');
     expect(t).not.toContain('menisco');
     expect(t).not.toContain('joelho esquerdo');
   });
   it('um colateral alterado: o outro volta a ter frase própria', () => {
     const t = gj({ 'd.lct.tipo': 'lesão com afilamento (lesão parcial)' });
-    expect(t).toContain('Ligamento colateral fibular do joelho direito com ecotextura, espessura e contornos preservados.');
+    expect(t).toContain('Ligamento colateral fibular com ecotextura, espessura e contornos preservados.');
     expect(t).not.toContain('Ligamentos colateral');
   });
   it('esquerdo: título e frases do lado esquerdo', () => {
     const t = gj({ 'jo.lado': 'esquerdo', 'e.derrame.tipo': 'presente', 'e.derrame.tipo.grau': 'moderado' });
     expect(t).toContain('ULTRASSONOGRAFIA DO JOELHO ESQUERDO');
-    expect(t).toContain('Derrame articular no joelho esquerdo, em quantidade moderado.');
-    expect(t).toContain('Derrame articular no joelho esquerdo.');
+    expect(t).toContain('Derrame articular, em quantidade moderado.');
+    expect(t).toContain('Derrame articular.');
     expect(t).not.toContain('joelho direito');
   });
   it('derrame com espessamento sinovial e osteoartrose', () => {
     const t = gj({ 'd.derrame.tipo': 'presente', 'd.derrame.tipo.grau': 'moderado', 'd.derrame.tipo.esp': 'sim', 'd.artrose.on': true });
-    expect(t).toContain('Derrame articular no joelho direito, em quantidade moderado, associado a espessamento sinovial.');
-    expect(t).toContain('Derrame articular no joelho direito, associado a espessamento sinovial.');
+    expect(t).toContain('Derrame articular, em quantidade moderado, associado a espessamento sinovial.');
+    expect(t).toContain('Derrame articular, associado a espessamento sinovial.');
     expect(t).toContain('Irregularidades corticais associadas a osteófitos marginais, nas articulações fêmur-tibial e fêmur-fibular.');
     expect(t).toContain('Sinais de gonartrose.');
   });
@@ -625,10 +630,9 @@ describe('frases de referência incorporadas', () => {
     expect(n).not.toContain('zona periférica é homogênea');
     expect(gerarP({ 'pros.pr': true })).not.toContain('Vesículas seminais');
   });
-  it('tireoide: hemitireoidectomia, PAAF, Doppler com artérias', () => {
+  it('tireoide: hemitireoidectomia, Doppler com artérias', () => {
     const gt2 = (o = {}) => gerarLaudo(tireoide, { ...respInicial(tireoide), ...o }).texto;
     expect(gt2({ 'tireoide.hemitireoidectomia': true })).toContain('Lobo direito ausente (status pós cirúrgico). Lobo esquerdo tópico, com contornos regulares.');
-    expect(gt2({ 'tireoide.paaf': true })).toContain('Foi efetuada punção aspirativa com agulha fina da alteração observada');
     const d = gt2({ 'tireoide.dopp': true, 'tireoide.dopp.tipo': 'Hiperfluxo difuso', 'tireoide.dopp.art': 'velocidades aumentadas' });
     expect(d).toContain('demonstra sinais de hiperfluxo difuso. As artérias tireoidianas apresentam aumento das velocidades de pico sistólico.');
     expect(gt2({ 'tireoide.ecotextura': 'alteração textural difusa inespecífica' })).toContain('A ecotextura é difusamente heterogênea, não se observando nódulos.');
@@ -639,5 +643,234 @@ describe('frases de referência incorporadas', () => {
     expect(gv3({ 'ut.adenomiose': true, 'ut.mioma1': true })).toContain('Nota-se também indefinição da zona juncional');
     expect(gv3({ 'ovdireito.cisto1': true, 'ovdireito.cisto1.tipo': 'cisto dermoide' })).toContain('Cisto com aspecto compatível com cisto dermoide no ovário direito.');
     expect(gv3({ 'endo.asp.esp': 'não citar espessura' })).toContain('Endométrio regular, homogêneo, com espessura normal.');
+  });
+});
+
+describe('obstétrica', () => {
+  const g1 = (o = {}) => gerarLaudo(obstetrico1, { ...respInicial(obstetrico1), ...o }).texto;
+  const g2 = (o = {}) => gerarLaudo(obstetrico2, { ...respInicial(obstetrico2), ...o }).texto;
+  it('1º trimestre: campos em branco viram [PREENCHER]; TN fica de fora', () => {
+    const t = g1();
+    expect(t).toContain('ULTRASSONOGRAFIA OBSTÉTRICA');
+    expect(t).toContain('Bexiga com mínima repleção.');
+    expect(t).toContain('O saco gestacional mede [PREENCHER] x [PREENCHER] x [PREENCHER] cm.');
+    expect(t).toContain('Colo uterino sem alterações.');
+    expect(t).toContain('Líquido amniótico em quantidade normal.');
+    expect(t).not.toContain('Translucência');
+    expect(t).not.toContain('EMBRIÃO');
+    expect(t).toContain('ID:\nGestação tópica, com embrião único e vivo, com idade gestacional estimada em torno de [PREENCHER] semanas e [PREENCHER] dias (variação de +/- 0,5 semana).');
+    expect(t).toContain('OBS: EM CASO DE RETORNO');
+  });
+  it('1º trimestre preenchido, com translucência nucal', () => {
+    const t = g1({ 'ob1.e1.sg.a': '2,8', 'ob1.e1.sg.b': '2,9', 'ob1.e1.sg.c': '1,3', 'ob1.ig.sem': '7', 'ob1.ig.dias': '3',
+      'ob1.e1.vv.mm': '0,38', 'ob1.e1.emb.ccn': '1,28', 'ob1.e1.emb.bcf': '158', 'ob1.e1.tn': true, 'ob1.e1.tn.tn': '0,15' });
+    expect(t).toContain('O saco gestacional mede 2,8 x 2,9 x 1,3 cm.');
+    expect(t).toContain('Vesícula vitelínica de aspecto usual, medindo cerca de 0,38 cm.');
+    expect(t).toContain('Embrião visibilizado com batimentos cardíacos no presente exame. CCN = 1,28 cm. BCF = 158 bpm.');
+    expect(t).toContain('Translucência nucal medindo 0,15 cm (normal).');
+    expect(t).toContain('em torno de 7 semanas e 3 dias (variação de +/- 0,5 semana).');
+    expect(contarPendencias(t)).toBe(0);
+  });
+  it('1º trimestre gemelar: dois embriões, cada um com seu saco', () => {
+    const t = g1({ 'ob1.gest': 'gemelar', 'ob1.e1.sg.a': '2,8', 'ob1.e2.sg.a': '2,0' });
+    expect(t).toContain('Útero gravídico, com forma e contornos normais.\nColo uterino sem alterações.\nEMBRIÃO 01:\nO saco gestacional mede 2,8 x');
+    expect(t).toContain('EMBRIÃO 02:\nO saco gestacional mede 2,0 x');
+    expect(t).toContain('Gestação tópica, com dois embriões vivos, com idade gestacional');
+    expect(t).not.toContain('apresentando saco gestacional tópico');
+  });
+  it('2º/3º trimestre: modelo, ILA em branco e sem Doppler', () => {
+    const t = g2({ 'ob2.ig.sem': '32', 'ob2.ig.dias': '1' });
+    expect(t).toContain('Gestação tópica, com feto único, em situação longitudinal, apresentação cefálica, com dorso à esquerda durante a realização do exame.');
+    expect(t).toContain('Placenta de localização corporal posterior, homogênea grau 0 de maturidade, com espessura normal.');
+    expect(t).toContain('Ausência de imagens sugestivas de descolamento.');
+    expect(t).toContain('Líquido amniótico em quantidade adequada para a atual fase gestacional.');
+    expect(t).not.toContain('DOPPLER');
+    expect(t).toContain('ID:\nGestação tópica, com feto único e vivo, com idade gestacional estimada em torno de 32 semanas e 1 dias (variação de +/- 1,0 semana).\n\nOBS');
+  });
+  it('ILA: referência 8–24, oligoâmnio e polidrâmnio', () => {
+    const il = (v: string) => g2({ 'ob2.ig.sem': '30', 'ob2.ig.dias': '0', 'ob2.la.ila': v });
+    expect(il('10,69')).toContain('Líquido amniótico em quantidade adequada para a atual fase gestacional (ILA: 10,69 cm, VR: 8-24).');
+    expect(il('10,69')).not.toContain('Oligo');
+    expect(il('7,5')).toContain('Líquido amniótico em quantidade reduzida para a idade gestacional (ILA: 7,5 cm, VR: 8-24).');
+    expect(il('7,5')).toContain('(variação de +/- 1,0 semana).\nOligoâmnio.');
+    expect(il('25')).toContain('Líquido amniótico em quantidade aumentada para a atual idade gestacional (ILA: 25 cm, VR: 8-24).');
+    expect(il('25')).toContain('Polidrâmnio.');
+    expect(il('8')).not.toContain('reduzida');
+    expect(il('24')).not.toContain('aumentada');
+  });
+  it('Doppler só aparece se selecionado, com relação calculada', () => {
+    const t = g2({ 'ob2.dop': true, 'ob2.dop.acm_ip': '1,50', 'ob2.dop.acm_ir': '0,80', 'ob2.dop.au_ip': '1,02', 'ob2.dop.au_ir': '0,60',
+      'ob2.dop.utd_ip': '0,9', 'ob2.dop.utd_ir': '0,5', 'ob2.dop.ute_ip': '0,8', 'ob2.dop.ute_ir': '0,5', 'ob2.ig.sem': '34', 'ob2.ig.dias': '2' });
+    expect(t).toContain('AO ESTUDO DOPPLER-DUPLEX COLOR, EVIDENCIAMOS:');
+    expect(t).toContain('Artéria cerebral média: com padrão espectral habitual. Índice de pulsatilidade (IP) de 1,50. Índice de resistência (IR) de 0,80.');
+    expect(t).toContain('Relação art. umbilical/art. cerebral média = 0,68 (normal < 1).');
+    expect(t.split('AO ESTUDO')[1]).not.toContain('[PREENCHER');
+    expect(g2()).not.toContain('Relação');
+  });
+});
+
+describe('mamas', () => {
+  const gm = (o = {}) => gerarLaudo(mamas, { ...respInicial(mamas), ...o }).texto;
+  it('normal igual ao print 1', () => {
+    expect(gm()).toContain('ULTRASSONOGRAFIA DE MAMAS\n\nMamas de morfologia normal e contornos regulares.\nPele e tecido adiposo subcutâneo de aspecto ecográfico preservado.\nA composição mamária apresenta ecotextura de fundo homogênea com predomínio fibroglandular.\nNão se observam imagens nodulares sólidas ou císticas.\nAusência de linfonodomegalias axilares.\n\nID:\nExame sem anormalidades detectáveis pelo método.\nClassificação ACR BI-RADS: 1');
+  });
+  it('alterado igual ao print 2', () => {
+    const t = gm({
+      'ma.comp': 'ecotextura de fundo heterogênea (áreas adiposas + áreas fibroglandulares)', 'ma.birads': '3',
+      'ma.impl.ok': true, 'ma.ect.tipo': 'ae', 'ma.ax.tipo': 'linfonodos normais', 'ma.obs.lim': true,
+      'ma.multi': true, 'ma.multi.dist': 'bilaterais', 'ma.multi.mm': 3, 'ma.multi.hora': 'às 4 horas', 'ma.multi.lado': 'esquerda',
+      'ma.n1': true, 'ma.n1.med.1': 12, 'ma.n1.med.2': 13, 'ma.n1.med.3': 14, 'ma.n1.hora': 'às 7 horas', 'ma.n1.lado': 'direita', 'ma.n1.forma': 'oval, circunscrito',
+      'ma.n2': true, 'ma.n2.med.1': 15, 'ma.n2.med.2': 16, 'ma.n2.med.3': 17, 'ma.n2.sit': 'citar distância ao mamilo e à pele', 'ma.n2.mam': 11, 'ma.n2.pele': 8,
+      'ma.n2.hora': 'às 7 horas', 'ma.n2.lado': 'esquerda', 'ma.n2.forma': 'oval, indistinto', 'ma.n2.pseudo': 'possível pseudonódulo (ilhota adiposa)',
+    });
+    expect(t).toContain('A composição mamária apresenta ecotextura de fundo heterogênea, entremeando áreas adiposas com áreas de tecido fibroglandular.');
+    expect(t).toContain('São identificados vários cistos anecogênicos de contornos regulares e paredes finas, bilaterais, medindo até 0,3 cm, o maior deles localizado no quadrante inferolateral da mama esquerda às 4 horas.');
+    expect(t).toContain('Presença de dois nódulos sólidos nas seguintes topografias:\nMama direita:\n- no quadrante inferolateral às 7 horas, nódulo hipoecogênico oval, circunscrito, medindo 1,2 x 1,3 x 1,4 cm.\nMama esquerda:\n- no quadrante inferomedial às 7 horas, nódulo hipoecogênico oval, indistinto, medindo 1,5 x 1,6 x 1,7 cm. Encontra-se a 1,1 cm do mamilo e a 0,8 cm da pele. Suas características ultrassonográficas permitem diagnóstico diferencial com ilhota de tecido adiposo.');
+    expect(t).toContain('Implantes bilaterais de contornos regulares e conteúdo anecogênico.');
+    expect(t).toContain('Presença de algumas ectasias ductais retroareolares à esquerda com contornos regulares e conteúdo anecogênico.');
+    expect(t).toContain('Presença de linfonodos axilares de aspecto habitual.');
+    expect(t).toContain('ID:\nCistos simples bilaterais.\nNódulos bilaterais.\nImplantes sem evidências de rotura.\nEctasias ductais à esquerda.\nRestante do exame sem anormalidades detectáveis pelo método.\nClassificação ACR BI-RADS: 3');
+  });
+  it('quadrantes por horário (mama direita e esquerda)', () => {
+    const q = (h: string, lado: string) => gm({ 'ma.cisto1': true, 'ma.cisto1.hora': h, 'ma.cisto1.lado': lado });
+    expect(q('às 10 horas', 'direita')).toContain('no quadrante superolateral da mama direita às 10 horas');
+    expect(q('às 10 horas', 'esquerda')).toContain('no quadrante superomedial da mama esquerda às 10 horas');
+    expect(q('às 12 horas', 'direita')).toContain('na junção dos quadrantes superiores da mama direita às 12 horas');
+    expect(q('às 3 horas', 'esquerda')).toContain('na junção dos quadrantes laterais da mama esquerda às 3 horas');
+  });
+  it('cistos simples nas duas mamas viram uma linha no ID; um nódulo só', () => {
+    const t = gm({ 'ma.cisto1': true, 'ma.cisto2': true, 'ma.cisto2.lado': 'esquerda',
+      'ma.n1': true, 'ma.n1.lado': 'esquerda', 'ma.n1.hora': 'às 2 horas', 'ma.n1.acus': 'com atenuação acústica posterior' });
+    expect(t).toContain('Cistos simples bilaterais.');
+    expect(t).toContain('Presença de nódulo sólido na mama esquerda, no quadrante superolateral às 2 horas, hipoecogênico oval, circunscrito, com atenuação acústica posterior, medindo 1,0 x 1,0 x 1,0 cm.');
+    expect(t).toContain('Nódulo na mama esquerda.');
+  });
+});
+
+describe('cotovelo', () => {
+  const gc = (o = {}) => gerarLaudo(cotovelo, { ...respInicial(cotovelo), ...o }).texto;
+  it('normal igual ao print 1 (sem líquido peritendíneo)', () => {
+    const t = gc();
+    expect(t).toContain('ULTRASSONOGRAFIA DO COTOVELO DIREITO');
+    expect(t).toContain('Tendão comum dos extensores do antebraço e comum dos flexores do antebraço com ecotextura e espessura preservadas e contornos normais.\nTendão do bíceps braquial e do tríceps braquial com ecotextura e espessura preservadas e contornos normais.\nNervo ulnar de espessura, contornos e ecotextura normais.\nAusência de derrame articular.');
+    expect(t).toContain('ID:\nExame sem anormalidades detectáveis pelo método.');
+    expect(gc({ 'co.lado': 'esquerdo' })).toContain('COTOVELO ESQUERDO');
+  });
+  it('alterado igual ao print 2', () => {
+    const t = gc({ 'co.ext.tipo': 'tend', 'co.flex.tipo': 'tend', 'co.derrame.tipo': 'pres' });
+    expect(t).toContain('Tendão comum dos extensores e comum dos flexores espessados, com alteração ecotextural, mas sem evidências de rotura.\nTendão do bíceps braquial e do tríceps braquial com ecotextura');
+    expect(t).toContain('Presença de líquido intra-articular.');
+    expect(t).toContain("ID:\nTendinopatia dos extensores (epicondilite lateral).\nTendinopatia dos flexores (epicondilite medial).\nDerrame articular.\nRestante do exame sem anormalidades detectáveis pelo método.");
+  });
+  it('só um tendão do par alterado: o outro volta a ter frase própria', () => {
+    const t = gc({ 'co.bic.tipo': 'completa', 'co.bic.tipo.int': 12 });
+    expect(t).toContain('Tendão do bíceps braquial com sinais de rotura completa, com 1,2 cm de intervalo.');
+    expect(t).toContain('Tendão do tríceps braquial com ecotextura e espessura preservadas e contornos normais.');
+    expect(t).not.toContain('Tendão do bíceps braquial e do tríceps');
+  });
+  it('rotura parcial com 2 medidas, entesófito e nervo ulnar', () => {
+    const t = gc({ 'co.ext.tipo': 'parcial', 'co.tri.ent': true, 'co.tri.ent.mm': 4, 'co.nervo.tipo': 'aum', 'co.nervo.tipo.area': 'citar área seccional', 'co.nervo.tipo.ass': '12', 'co.nervo.sub': true });
+    expect(t).toContain('rotura parcial medindo 1,0 x 1,0 cm.');
+    expect(t).toContain('notando-se entesófito medindo 0,4 cm junto à inserção.');
+    expect(t).toContain('Nervo ulnar com espessura aumentada, com área seccional de 12 mm².');
+    expect(t).toContain('Subluxação do nervo ulnar durante a flexão do cotovelo.');
+  });
+});
+
+describe('partes moles', () => {
+  const gp = (o = {}) => gerarLaudo(partesMoles, { ...respInicial(partesMoles), ...o }).texto;
+  it('normal', () => {
+    const t = gp();
+    expect(t).toContain('Pele e tecido subcutâneo sem anormalidades detectáveis.\nAusência de nódulos, massas ou coleções.\nPlanos musculares de aspecto preservado.');
+    expect(t).toContain('ID:\nExame sem anormalidades demonstráveis pelo método.');
+  });
+  it('seletores de ausência', () => {
+    const t = gp({ 'pm.ausHer': true, 'pm.ausDia': true });
+    expect(t).toContain('Ausência de herniações na região examinada.');
+    expect(t).toContain('Não há diástase do músculo reto abdominal.');
+    const h = gp({ 'pm.ausHer': true, 'pm.hum': true });
+    expect(h).not.toContain('Ausência de herniações');
+    expect(h).not.toContain('Planos musculares');
+  });
+  it('hérnia umbilical, epigástrica e diástase', () => {
+    const t = gp({ 'pm.hum': true, 'pm.hep': true, 'pm.dia': true, 'pm.dia.nivel': 'mesogástrio' });
+    expect(t).toContain('Na cicatriz umbilical observa-se um saco herniário contendo tecido adiposo, com variação de volume às manobras compressivas e respiratórias, medindo 1,0 x 1,0 cm, com colo de 1,0 cm.');
+    expect(t).toContain('Na região epigástrica, em topografia mediana, observa-se um saco herniário contendo tecido adiposo, medindo 2,0 x 2,0 cm, com colo de 1,0 cm.');
+    expect(t).toContain('ao nível do mesogástrio, com distância transversa máxima de 0,3 cm entre as bordas mediais.');
+    expect(t).toContain('Pele e tecido subcutâneo sem anormalidades detectáveis.');
+    expect(t).not.toContain('Planos musculares');
+  });
+  it('lipoma e cisto', () => {
+    const t = gp({ 'pm.lipoma': true, 'pm.lipoma.reg': 'dorsal', 'pm.lipoma.cont': 'lobulados' });
+    expect(t).toContain('Na alteração palpável da região dorsal, caracteriza-se nos planos do subcutâneo, formação nodular sólida, de contornos lobulados, isoecogênica ao tecido adiposo, medindo 1,0 x 1,0 x 1,0 cm (L x AP x T), distando 0,5 cm da pele.');
+    expect(t).toContain('Formação nodular em partes superficiais, sugestivo de lipoma ou suas variantes histológicas.');
+    expect(t).not.toContain('Ausência de nódulos');
+    const c = gp({ 'pm.cisto': true, 'pm.cisto.reg': 'dorsal' });
+    expect(c).toContain('que mede 1,0 x 1,0 x 1,0 cm, na região dorsal. A hipótese de cisto epidermóide deve ser considerada.');
+    expect(c).toContain('Achados sugestivos de cisto epidermóide.\nRestante do exame sem particularidades.');
+  });
+  it('seroma, abscesso e tela', () => {
+    expect(gp({ 'pm.seroma': 'pequenas' })).toContain('Achados ultrassonográficos sugestivo de seroma na região supra-púbica.');
+    expect(gp({ 'pm.seroma': 'cistica' })).toContain('medindo 1,0 x 1,0 x 1,0 cm e volume estimado de 0,5 cm³, localizada na linha paramediana');
+    expect(gp({ 'pm.abscesso': true, 'pm.abscesso.reg': 'região periumbilical' })).toContain('Formação cístico-espessa na região periumbilical, sugestivo de abscesso.');
+    expect(gp({ 'pm.tela': true })).toContain('Telas/implantes cirúrgicos localizados na parede abdominal.');
+  });
+});
+
+describe('ajustes recentes', () => {
+  const G = (e: Parameters<typeof respInicial>[0], o = {}) => gerarLaudo(e, { ...respInicial(e), ...o }).texto;
+  it('mamas: frase de ausência de nódulos se ajusta sozinha', () => {
+    expect(G(mamas)).toContain('Não se observam imagens nodulares sólidas ou císticas.');
+    const c = G(mamas, { 'ma.cisto1': true });
+    expect(c).toContain('Não se observam imagens nodulares sólidas.');
+    expect(c).not.toContain('sólidas ou císticas');
+    const n = G(mamas, { 'ma.n1': true, 'ma.n1.hora': 'retroareolar' });
+    expect(n).toContain('Não se observam imagens nodulares císticas.');
+    expect(n).toContain('na região retroareolar');
+    expect(G(mamas, { 'ma.cisto1': true, 'ma.n1': true })).not.toContain('Não se observam imagens nodulares');
+  });
+  it('mamas: cisto retroareolar', () => {
+    expect(G(mamas, { 'ma.cisto1': true, 'ma.cisto1.hora': 'retroareolar', 'ma.cisto1.lado': 'esquerda' })).toContain('localizado na região retroareolar da mama esquerda.');
+  });
+  it('obstétrico 1º tri: bexiga fixa e embrião não caracterizado', () => {
+    const t = G(obstetrico1, { 'ob1.nc': true, 'ob1.e1.sg.a': '1,0', 'ob1.e1.sg.b': '1,1', 'ob1.e1.sg.c': '0,9' });
+    expect(t).toContain('Bexiga com mínima repleção.');
+    expect(t).toContain('O saco gestacional mede 1,0 x 1,1 x 0,9 cm.');
+    expect(t).not.toContain('CCN');
+    expect(t).not.toContain('Líquido amniótico');
+    expect(t).toContain('Saco gestacional tópico, com embrião não caracterizado. À critério clínico, controle ultrassonográfico em 14 dias pode trazer mais informações.');
+    expect(t).not.toContain('idade gestacional estimada');
+  });
+  it('obstétrico 1º tri: aborto (evolução desfavorável)', () => {
+    const t = G(obstetrico1, { 'ob1.ab': true, 'ob1.ab.mm': '1,28' });
+    expect(t).toContain('medindo 1,28 cm no maior eixo');
+    expect(t).toContain('beta-hCG');
+    expect(t).not.toContain('CCN');
+  });
+  it('obstétrico 2º/3º tri: Doppler entra na conclusão', () => {
+    expect(G(obstetrico2, { 'ob2.dop': true }).split('ID:')[1]).toContain('Estudo Doppler');
+    expect(G(obstetrico2).split('ID:')[1]).not.toContain('Doppler');
+  });
+  it('joelho: quadríceps e patelar normais juntos', () => {
+    expect(G(joelho)).toContain('Tendões do quadríceps femoral e patelar com ecotextura e espessura preservadas e contornos normais.');
+    const t = G(joelho, { 'd.quadriceps.tipo': 'tendinopatia sem rotura' });
+    expect(t).toContain('Tendão patelar com ecotextura');
+    expect(t).not.toContain('Tendões do quadríceps');
+  });
+  it('transvaginal: sem status hormonal; ovário não caracterizado por último', () => {
+    const ops = transvaginal.secoes.find((x) => x.id === 'ovdireito')!.controles;
+    expect(ops.some((c) => c.id === 'ovdireito.status')).toBe(false);
+    const est = ops.find((c) => c.id === 'ovdireito.estado') as { opcoes: { r: string }[] };
+    expect(est.opcoes[est.opcoes.length - 1].r).toBe('não caracterizado');
+  });
+  it('tireoide: sem IR, Tomimori e PAAF realizada nos nódulos', () => {
+    const t = G(tireoide, { 'nodulos.n1': true });
+    expect(t).not.toContain('resistividade');
+    expect(t).not.toContain('Tomimori');
+    expect(tireoide.secoes.flatMap((x) => x.controles).some((c) => c.id === 'tireoide.paaf')).toBe(false);
+  });
+  it('volume vesical: pré e pós no mesmo box', () => {
+    const sec = ex.secoes.find((x) => x.id === 'volves')!;
+    expect(sec.controles.map((c) => c.id)).toEqual(expect.arrayContaining(['volpre.on', 'resid.on']));
   });
 });
