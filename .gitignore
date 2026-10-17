@@ -1,2 +1,6 @@
 node_modules
 dist
+
+# Arquivos locais de contexto
+CONTEXT nao enviar git.md
+CONTEXT.md

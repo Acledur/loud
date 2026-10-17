@@ -42,6 +42,7 @@ const geral: Secao = {
       { r: 'ecotextura de fundo homogênea – fibroglandular', corpo: 'A composição mamária apresenta ecotextura de fundo homogênea com predomínio fibroglandular.' },
       { r: 'ecotextura de fundo homogênea – adiposa', corpo: 'A composição mamária apresenta ecotextura de fundo homogênea com predomínio adiposo.' },
       { r: 'ecotextura de fundo heterogênea (áreas adiposas + áreas fibroglandulares)', corpo: 'A composição mamária apresenta ecotextura de fundo heterogênea, entremeando áreas adiposas com áreas de tecido fibroglandular.' },
+      { r: 'ecotextura genérica', corpo: 'Observa-se distribuição habitual do estroma fibroglandular e do tecido adiposo.' },
     ], { ordem: 10, rotulo: 'Composição da mama' }),
     esc('ma.birads', 'select', ops('1', '2', '3', '4A', '4B', '4C', '5', '6', '0'), { ordem: 30, rotulo: 'BI-RADS®' }),
   ],
@@ -160,11 +161,7 @@ const nodulos: Secao = {
   ],
 };
 
-// ---------- Planos musculares, axilas, observações ----------
-const planos: Secao = {
-  id: 'ma.musc', titulo: 'Planos musculares', ordem: 60,
-  controles: [chk('ma.musc.n', 'citar planos musculares normais', 'Planos musculares de aspecto ecográfico preservado.')],
-};
+// ---------- Axilas, observações ----------
 const ASP: Opc[] = [
   { r: 'cortical espessada, hilo preservado', t: 'com cortical espessada e hilo gorduroso preservado' },
   { r: 'cortical espessada, hilo apagado', t: 'com cortical espessada e hilo gorduroso apagado' },
@@ -187,6 +184,7 @@ const obs: Secao = {
   id: 'ma.obs', titulo: 'Observações opcionais', ordem: 80, umaPorLinha: true,
   controles: [
     chk('ma.obs.lim', 'ressaltar limitação do método quando efetuado isoladamente', 'Ressalta-se a limitação do método ultrassonográfico quando efetuado isoladamente, sendo recomendada a correlação com mamografia.'),
+    chk('ma.obs.dop', 'citar Doppler normal', 'A avaliação com Doppler demonstra vascularização normal do parênquima mamário bilateralmente.'),
     chk('ma.obs.mmg', 'mamografia não disponível para exame dirigido', 'Mamografia não disponível para correlação com o presente exame dirigido.'),
     chk('ma.obs.queixa', 'ausência de achados ultrassonográficos na área da queixa clínica', 'Ausência de achados ultrassonográficos na área da queixa clínica.'),
     chk('ma.obs.cic', 'ausência de achados subjacentes à cicatriz na mama', 'Ausência de achados ultrassonográficos subjacentes à cicatriz na mama {lado}.', undefined, [sel('lado', 'mama', MAMA)]),
@@ -199,5 +197,5 @@ export const mamas: Exame = {
   tituloLaudo: 'ULTRASSONOGRAFIA DE MAMAS',
   restante: 'Restante do exame sem anormalidades detectáveis pelo método.',
   fim: ['Classificação ACR BI-RADS: {=val:ma.birads}'],
-  secoes: [motivo, geral, implantes, cirurgias, cistos, ectasias, gineco, nodulos, planos, axilas, obs],
+  secoes: [motivo, geral, implantes, cirurgias, cistos, ectasias, gineco, nodulos, axilas, obs],
 };

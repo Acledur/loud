@@ -309,6 +309,7 @@ export function gerarLaudo(ex: Exame, r: Resp, opts: { cabecalho?: string; rodap
   const porCtl: Record<string, Campo[]> = {};
   const checks: Record<string, Check> = {};
   const emGrupo = new Set<string>();
+  const adiados: Record<string, Frag[]> = {};
   for (const sec of ex.secoes)
     for (const c of sec.controles) {
       if (c.tipo === 'check') { porCtl[c.id] = c.campos ?? []; checks[c.id] = c; }
@@ -341,13 +342,18 @@ export function gerarLaudo(ex: Exame, r: Resp, opts: { cabecalho?: string; rodap
         return;
       }
       const f = fragmento(c, ordem, r, at, vars, porCtl);
-      if (f) frags.push(f);
+      const dest = c.tipo === 'check' ? c.fimDe : undefined;
+      if (f) (dest ? (adiados[dest] ??= []) : frags).push(f);
     });
+    frags.push(...(adiados[sec.id] ?? []));
     frags.sort((a, b) => a.ordem - b.ordem);
 
     const p = frags.map((f) => f.txt).filter(Boolean).join(sec.umaPorLinha ? '\n' : ' ');
     // \n dentro de uma frase = quebra de linha (ex.: lista "Dimensões renais:")
-    paragrafos.push(...p.split('\n').map((x) => x.trim()).filter(Boolean));
+    const lin = p.split('\n').map((x) => x.trim()).filter(Boolean);
+    const k = sec.continua && paragrafos.length ? lin.findIndex((x) => !x.startsWith('Obs.:')) : -1;
+    if (k >= 0) paragrafos[paragrafos.length - 1] += ' ' + lin.splice(k, 1)[0];
+    paragrafos.push(...lin);
     let cs = frags.flatMap((f) => f.concl).filter(Boolean);
     for (const b of sec.bilateral ?? []) {
       const d = `${b.base} à direita.`;
@@ -360,6 +366,10 @@ export function gerarLaudo(ex: Exame, r: Resp, opts: { cabecalho?: string; rodap
     }
     concl.push(...cs);
   }
+  // textos com fimDe: 'fim' (ex.: resíduo pós-miccional) saem por último, no laudo e na conclusão
+  const fimF = (adiados['fim'] ?? []).sort((a, b) => a.ordem - b.ordem);
+  paragrafos.push(...fimF.map((f) => f.txt).join(' ').split('\n').map((x) => x.trim()).filter(Boolean));
+  concl.push(...fimF.flatMap((f) => f.concl).filter(Boolean));
 
   const unicas = [...new Set(concl)];
   const id = unicas.length ? [...unicas, ...(ex.semRestante ? [] : [ex.restante ?? 'Restante do exame sem particularidades.'])] : [ex.idNormal ?? 'Exame sem anormalidades detectáveis pelo método.'];
@@ -372,7 +382,10 @@ export function gerarLaudo(ex: Exame, r: Resp, opts: { cabecalho?: string; rodap
   if (cab.length) linhas.push(vazia);
   const titulo = ex.tituloVar ? (ex.tituloVar.opcoes[String(r[ex.tituloVar.ctl])] ?? ex.tituloLaudo) : ex.tituloLaudo;
   linhas.push({ t: titulo, a: 'center', b: true }, vazia);        // título: centralizado, negrito
-  paragrafos.forEach((t) => linhas.push({ t, a: 'justify' }));
+  // parágrafos que começam com "Obs.:" saem logo acima do ID, com linha em branco antes e depois
+  paragrafos.filter((t) => !t.startsWith('Obs.:')).forEach((t) => linhas.push({ t, a: 'justify' }));
+  const obsMetodo = paragrafos.filter((t) => t.startsWith('Obs.:'));
+  if (obsMetodo.length) linhas.push(vazia, ...obsMetodo.map((t): Linha => ({ t, a: 'justify' })));
   linhas.push(vazia, { t: 'ID:', a: 'left', b: true });                   // "ID:" em negrito
   const fim = (ex.fim ?? []).map((t) => t.replace(/\{=val:([\w.]+)\}/g, (_, k: string) => String(r[k] ?? '')));
   [...id, ...fim].forEach((t) => linhas.push({ t, a: 'justify' }));

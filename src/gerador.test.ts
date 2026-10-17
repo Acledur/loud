@@ -124,7 +124,7 @@ describe('casos de referência', () => {
     expect(t).toContain('Pâncreas parcialmente visibilizado devido à interposição de alças intestinais.');
     expect(t).toContain('Baço com dimensões aumentadas, contornos regulares e ecotextura homogênea. Mede 10,0 x 6,2 cm em seu maior e menor eixo (índice esplênico uniplanar = 62,0).');
     expect(t).toContain('Aorta com paredes hiperecogênicas e discretamente irregulares, conservando calibre normal.');
-    expect(t).toContain('conteúdo anecogênico.\nVolume vesical pré-miccional estimado em 161 ml.\nResíduo vesical pós-miccional desprezível.\nNota-se pequena quantidade de líquido livre na pelve.');
+    expect(t).toContain('conteúdo anecogênico.\nVolume vesical pré-miccional estimado em 161 ml.\nNota-se pequena quantidade de líquido livre na pelve.\nResíduo vesical pós-miccional desprezível.\n\nID:');
     expect(t).toContain('ID:\nEsplenomegalia.\nAteromatose aórtica.\nDilatação do sistema coletor renal à direita.\nPresença de líquido em pequena quantidade na pelve.\nRestante do exame sem particularidades.');
   });
   it('próstata acima de 30 cm³: aumento prostático, resíduo desprezível', () => {
@@ -134,7 +134,6 @@ describe('casos de referência', () => {
       'Bexiga com boa repleção, paredes finas e regulares, conteúdo anecogênico.',
       'Próstata de contornos regulares, com ecotextura habitual.',
       'Medidas: 4,5 x 5,0 x 4,5 cm. Volume estimado em 53,0 cm³ (normal até 30,0 cm³).',
-      'Vesículas seminais com dimensões normais. Ângulos vesicosseminais simétricos.',
       'Resíduo vesical pós-miccional desprezível.', '',
       'ID:', 'Aumento prostático.', 'Resíduo vesical pós-miccional desprezível.',
     ].join('\n'));
@@ -145,7 +144,6 @@ describe('casos de referência', () => {
       'Bexiga com boa repleção, paredes finas e regulares, conteúdo anecogênico.',
       'Próstata de contornos regulares, com ecotextura habitual.',
       'Medidas: 2,5 x 2,5 x 2,5 cm. Volume estimado em 8,2 cm³ (normal até 30,0 cm³).',
-      'Vesículas seminais com dimensões normais. Ângulos vesicosseminais simétricos.',
       'Resíduo vesical pós-miccional ausente.', '',
       'ID:', 'Próstata com volume estimado em 8,2 cm³.', 'Resíduo vesical pós-miccional ausente.',
     ].join('\n'));
@@ -582,9 +580,8 @@ describe('frases de referência incorporadas', () => {
     expect(t).toContain('Presença de dois cálculos calicinais à direita e à esquerda, nas seguintes topografias:\n- Cálculo de 0,5 cm no grupamento calicinal superior do rim direito.\n- Cálculo de 0,5 cm no grupamento calicinal superior do rim esquerdo.\nNão há dilatação do sistema coletor.');
     expect(gerar({ 'rins.calc1': true })).toContain('Cálculo de 0,5 cm no grupamento calicinal superior do rim direito.');
   });
-  it('duplo J, Doppler renal e aorta', () => {
+  it('duplo J e aorta', () => {
     expect(gerar({ 'rins.duploj': true, 'rins.duploj.lado': 'bilateral' })).toContain('Presença de cateter "duplo J" bilateralmente');
-    expect(gerar({ 'rins.dopp': true, 'rins.dopp.vd': '110', 'rins.dopp.ve': '120' })).toContain('velocidades sistólicas de 110 cm/s à direita e 120 cm/s à esquerda.');
     expect(gerar({ 'aorta.tipo': 'ateromatosa e ectasiada' })).toContain('calibre transverso máximo de 2,5 cm nos segmentos acessíveis.');
   });
   it('bexiga: cálculo com paredes e lesão vegetante', () => {
@@ -620,15 +617,6 @@ describe('frases de referência incorporadas', () => {
     expect(t).toContain('ULTRASSONOGRAFIA DO ABDOME SUPERIOR');
     for (const f of ['Fígado com', 'Vesícula biliar', 'Não há dilatação das vias', 'Pâncreas', 'Baço', 'Aorta']) expect(t).toContain(f);
     for (const f of ['Rins', 'Bexiga', 'líquido livre']) expect(t).not.toContain(f);
-  });
-  it('próstata: transretal substitui a frase de contornos', () => {
-    const t = gerarP({ 'tr.on': true });
-    expect(t).toContain('Próstata de contornos regulares, apresentando glândula interna de ecotextura característica. A zona periférica é homogênea, sem lesões focais detectáveis.');
-    expect(t).not.toContain('com ecotextura habitual');
-    const n = gerarP({ 'tr.on': true, 'tr.nod': true, 'tr.nod.bx': 'biópsia com 12 fragmentos' });
-    expect(n).toContain('Na zona periférica observa-se um nódulo hipoecogênico situado no terço médio à direita, medindo 1,0 x 1,0 x 1,0 cm. Realizada biópsia com 12 fragmentos, sem intercorrências dignas de nota.');
-    expect(n).not.toContain('zona periférica é homogênea');
-    expect(gerarP({ 'pros.pr': true })).not.toContain('Vesículas seminais');
   });
   it('tireoide: hemitireoidectomia, Doppler com artérias', () => {
     const gt2 = (o = {}) => gerarLaudo(tireoide, { ...respInicial(tireoide), ...o }).texto;
@@ -870,7 +858,58 @@ describe('ajustes recentes', () => {
     expect(tireoide.secoes.flatMap((x) => x.controles).some((c) => c.id === 'tireoide.paaf')).toBe(false);
   });
   it('volume vesical: pré e pós no mesmo box', () => {
-    const sec = ex.secoes.find((x) => x.id === 'volves')!;
+    const sec = ex.secoes.find((x) => x.id === 'bex')!;
     expect(sec.controles.map((c) => c.id)).toEqual(expect.arrayContaining(['volpre.on', 'resid.on']));
   });
 });
+
+describe('ajustes (próstata, rins, fígado, mamas)', () => {
+  const G = (e: typeof prostata, o = {}) => gerarLaudo(e, { ...respInicial(e), ...o }).texto;
+  it('próstata: volume vesical (pré + pós) e prostatectomia no box Próstata', () => {
+    const t = G(prostata, { 'volpre.on': true, 'volpre.on.v.1': 80, 'volpre.on.v.2': 50, 'volpre.on.v.3': 50 });
+    expect(t).toContain('Volume vesical pré-miccional estimado em');
+    expect(t).toContain('Resíduo vesical pós-miccional');
+    const pr = G(prostata, { 'pros.pr': true, 'pros.rtu': true });
+    expect(pr).toContain('Status pós-prostatectomia radical.');
+    expect(pr).not.toContain('Próstata de contornos');
+    expect(pr).not.toContain('R.T.U.');
+  });
+  it('título muda ao citar a próstata (abdome total e aparelho urinário)', () => {
+    expect(G(ex as typeof prostata)).toContain('ULTRASSONOGRAFIA DO ABDOME TOTAL\n');
+    expect(G(ex as typeof prostata, { 'pros.nao': false })).toContain('ULTRASSONOGRAFIA DO ABDOME TOTAL E PRÓSTATA');
+    expect(G(apUrinario as typeof prostata, { 'pros.nao': false })).toContain('ULTRASSONOGRAFIA DO APARELHO URINÁRIO E PRÓSTATA');
+  });
+  it('abdome total: box próstata com "não citar" pré-selecionado', () => {
+    expect(G(ex as typeof prostata)).not.toContain('róstata');
+    expect(G(ex as typeof prostata, { 'pros.nao': false })).toContain('Próstata de contornos regulares');
+  });
+  it('próstata: não citar próstata (e padrão no aparelho urinário)', () => {
+    const n = G(prostata, { 'pros.nao': true });
+    expect(n).not.toContain('Próstata');
+    expect(n).not.toContain('Medidas:');
+    const u = gerarLaudo(apUrinario, respInicial(apUrinario)).texto;
+    expect(u).not.toContain('róstata');
+    expect(gerarLaudo(apUrinario, { ...respInicial(apUrinario), 'pros.nao': false }).texto).toContain('Próstata de contornos regulares');
+  });
+  it('rins: angiomiolipoma, limitação do método acima do ID, sem Doppler', () => {
+    const t = G(ex, { 'rins.nodulo': true, 'rins.lim': true });
+    expect(t).toContain('Formação nodular sólida cortical, localizada no');
+    expect(t).toContain('Nódulo renal sugestivo de angiomiolipoma.');
+    expect(t).toContain('ecográfico.\n\nID:');
+    expect(t).toContain('\n\nObs.: Cálculos renais menores que 0,4 cm');
+    expect(ex.secoes.flatMap((x) => x.controles).some((c) => c.id === 'rins.dopp')).toBe(false);
+  });
+  it('fígado esteatose/depósito e FID livre', () => {
+    const t = G(ex, { 'fig.eco': 'esteatose', 'fig.eco.grau': 'esteatose/depósito', 'alcas.fid': true });
+    expect(t).toContain('bordas finas. Infiltrado parenquimatoso hepático difuso, que embora pouco específico, pode corresponder a esteatose leve (grau I) ou de forma menos frequente, doenças de depósito.');
+    expect(t.split('ID:')[1]).toContain('Infiltrado parenquimatoso hepático difuso');
+    expect(t).toContain('Fossa ilíaca direita sem coleções ou sinais de processo inflamatório agudo.');
+  });
+  it('mamas: ecotextura genérica, Doppler normal, sem planos musculares', () => {
+    const t = G(mamas as typeof prostata, { 'ma.comp': 'ecotextura genérica', 'ma.obs.dop': true });
+    expect(t).toContain('Observa-se distribuição habitual do estroma fibroglandular e do tecido adiposo.');
+    expect(t).toContain('vascularização normal do parênquima mamário bilateralmente.');
+    expect(t).not.toContain('Planos musculares');
+  });
+});
+

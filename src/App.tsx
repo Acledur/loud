@@ -146,7 +146,11 @@ export default function App() {
     const blob = new Blob([htmlParaRtf(ed.current!, { cab: imgCab, rod: imgRod })], { type: 'application/rtf' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'laudo.rtf';
+    // nome do arquivo: "Paciente - Exame.rtf" (sem o paciente: "Exame.rtf")
+    const limpa = (t: string) => t.replace(/[\\/:*?"<>|\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const nomeExame = limpa(exame.titulo).replace(/(^|\s)\S/g, (m) => m.toUpperCase());
+    const pac = limpa(cab.pac);
+    a.download = `${pac ? `${pac} - ` : ''}${nomeExame || 'Laudo'}.rtf`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }

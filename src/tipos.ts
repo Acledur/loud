@@ -26,6 +26,7 @@ export type Campo = {
 type Base = {
   id: string;      // único no exame inteiro (ex.: 'fig.cisto')
   ordem?: number;  // posição do texto dentro do parágrafo do órgão
+  fimDe?: string;  // (só check) o texto sai no fim do parágrafo da seção com este id (ex.: medidas dos rins no fim de rins2)
   desativadoPor?: string[]; // fica cinza e não escreve nada enquanto algum destes ids estiver marcado/alterado
 };
 
@@ -84,6 +85,7 @@ export type Controle = Check | Escolha | Fixo | Grupo;
 export type Secao = {
   id: string;
   titulo: string;
+  continua?: boolean; // o texto segue no mesmo parágrafo da seção anterior (box dividido só na tela)
   ordem: number;      // ordem do parágrafo no laudo
   controles: Controle[];
   desativadoPor?: string[];  // a seção inteira fica cinza e não escreve nada

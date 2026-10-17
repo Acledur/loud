@@ -90,13 +90,14 @@ const secoes: Secao[] = [
         { r: 'homogêneo', corpo: 'Fígado com dimensões {dim}, contornos regulares, bordas finas e ecotextura homogênea.' },
         { r: 'esteatose',
           campos: [sel('grau', 'grau', [
-            { r: 'grau não especificado', t: 'apresentando aumento difuso da ecogenicidade que determina atenuação posterior do feixe acústico', c: '' },
-            { r: 'discreta', t: 'apresentando discreto aumento difuso da ecogenicidade', c: ' discreta (grau I)' },
-            { r: 'moderada', t: 'apresentando aumento difuso da ecogenicidade que determina atenuação posterior do feixe acústico', c: ' moderada (grau II)' },
-            { r: 'acentuada', t: 'apresentando acentuado aumento da ecogenicidade do parênquima que determina atenuação posterior do feixe acústico, limitando a detecção de lesões focais', c: ' acentuada (grau III)' },
+            { r: 'grau não especificado', t: ', apresentando aumento difuso da ecogenicidade que determina atenuação posterior do feixe acústico', c: 'Sinais de esteatose hepática' },
+            { r: 'discreta', t: ', apresentando discreto aumento difuso da ecogenicidade', c: 'Sinais de esteatose hepática discreta (grau I)' },
+            { r: 'moderada', t: ', apresentando aumento difuso da ecogenicidade que determina atenuação posterior do feixe acústico', c: 'Sinais de esteatose hepática moderada (grau II)' },
+            { r: 'acentuada', t: ', apresentando acentuado aumento da ecogenicidade do parênquima que determina atenuação posterior do feixe acústico, limitando a detecção de lesões focais', c: 'Sinais de esteatose hepática acentuada (grau III)' },
+            { r: 'esteatose/depósito', t: '. Infiltrado parenquimatoso hepático difuso, que embora pouco específico, pode corresponder a esteatose leve (grau I) ou de forma menos frequente, doenças de depósito', c: 'Infiltrado parenquimatoso hepático difuso, que embora pouco específico, pode corresponder a esteatose leve (grau I) ou de forma menos frequente, doenças de depósito' },
           ])],
-          corpo: 'Fígado com dimensões {dim}, contornos regulares e bordas finas, {grau}.',
-          concl: 'Sinais de esteatose hepática{grau|c}.' },
+          corpo: 'Fígado com dimensões {dim}, contornos regulares e bordas finas{grau}.',
+          concl: '{grau|c}.' },
         { r: 'hepatopatia crônica',
           campos: [sel('fase', 'fase', [
             { r: 'incipiente', c: 'incipiente', t: 'Fígado com dimensões {dim} e ecotextura difusamente heterogênea, com bordas discretamente rombas, conservando contornos regulares.' },
@@ -239,14 +240,13 @@ const secoes: Secao[] = [
         'Sinais de apendicite aguda.', [mm('mm', 'calibre', 7), sel('colecao', 'coleção', COLECAO)]),
       chk('alcas.divert', 'diverticulite', 'Presença de imagem diverticular com espessamento parietal em topografia do {seg}, associada a aumento da ecogenicidade da gordura adjacente{colecao}.',
         'Sinais de diverticulite aguda.', [sel('seg', 'segmento', ops('sigmoide', 'cólon descendente', 'cólon ascendente')), sel('colecao', 'coleção', COLECAO)]),
+      chk('alcas.fid', 'FID livre', 'Fossa ilíaca direita sem coleções ou sinais de processo inflamatório agudo.'),
     ],
   },
   {
     id: 'rins', titulo: 'Rins e ureteres', ordem: 70,
     bilateral: [
       { base: 'Cisto renal simples', resultado: 'Cistos renais bilaterais.' },
-      { base: 'Nefrolitíase', resultado: 'Nefrolitíase bilateral.' },
-      { base: 'Dilatação do sistema coletor renal', resultado: 'Dilatação do sistema coletor renal bilateral.' },
     ],
     controles: [
       esc('rins.tipo', 'radio', [
@@ -263,13 +263,33 @@ const secoes: Secao[] = [
           { r: 'bilateral', c: 'bilateral', t: 'Rins tópicos, com dimensões normais e contornos regulares, notando-se redução da espessura e aumento da ecogenicidade do parênquima bilateralmente.' },
           { r: 'do rim direito', c: 'à direita', t: 'Rins tópicos, notando-se redução da espessura e aumento da ecogenicidade do parênquima do rim direito. O rim esquerdo conserva dimensões, espessura e ecogenicidade parenquimatosas normais.' },
           { r: 'do rim esquerdo', c: 'à esquerda', t: 'Rins tópicos, notando-se redução da espessura e aumento da ecogenicidade do parênquima do rim esquerdo. O rim direito conserva dimensões, espessura e ecogenicidade parenquimatosas normais.' }])], 12),
+      // Medidas dos rins (L x T x AP em mm; deixe T/AP em branco para omitir). Sai por último, em linhas separadas.
+      { ...chk('rins.medidas', 'incluir medidas dos rins',
+        '\nDimensões renais:\n- rim direito: {d} cm.{cpd}\n- rim esquerdo: {e} cm.{cpe}', undefined,
+        [dims('d', 'rim direito L x T x AP', 3, 90, true),
+         sel('cpd', 'parênquima direito', [{ r: 'citar espessura', t: '\n- espessura do parênquima à direita: {pd|cm} cm' }, { r: 'sem parênquima', t: '' }]),
+         mm('pd', 'espessura dir.', 11),
+         dims('e', 'rim esquerdo L x T x AP', 3, 90, true),
+         sel('cpe', 'parênquima esquerdo', [{ r: 'citar espessura', t: '\n- espessura do parênquima à esquerda: {pe|cm} cm' }, { r: 'sem parênquima', t: '' }]),
+         mm('pe', 'espessura esq.', 12)], 60), fimDe: 'rins2' },
       ...cistosRenais,
       chk('rins.cistosB', 'cistos vários bilaterais',
         'Cistos de conteúdo anecogênico, com paredes finas e contornos regulares, bilaterais, medindo até {mm|cm} cm, o maior localizado no {terco} do {rim}.',
         'Cistos renais bilaterais.', [mm('mm', 'maior', 6), sel('terco', 'terço', TERCO), sel('rim', 'rim', RIM)], 24),
-      chk('rins.nodulo', 'nódulo sólido',
-        'Nódulo sólido {eco}, de contornos {contornos}, medindo {a|cm} x {b|cm} cm, no {terco} do {rim}.', 'Nódulo sólido renal {rim|c}.',
-        [sel('eco', 'ecogenicidade', ECO), sel('contornos', 'contornos', CONTORNOS), mm('a', 'medida 1'), mm('b', 'medida 2'), sel('terco', 'terço', TERCO), sel('rim', 'rim', RIM)], 25),
+      chk('rins.nodulo', 'nódulo sólido', '{eco}', '{eco|c}',
+        [sel('eco', 'ecogenicidade', [
+          { r: 'hiperecogênico (angiomiolipoma)', t: 'Formação nodular sólida cortical, localizada no {terco} do {rim}, de contornos regulares e bem definidos, hiperecogênica e homogênea, medindo {a|cm} x {b|cm} cm.', c: 'Nódulo renal sugestivo de angiomiolipoma.' },
+          ...['hipoecogênico', 'isoecogênico'].map((e) => ({ r: e, t: `Nódulo sólido ${e}, de contornos {contornos}, medindo {a|cm} x {b|cm} cm, no {terco} do {rim}.`, c: 'Nódulo sólido renal {rim|c}.' })),
+        ]), sel('contornos', 'contornos (se não for angiomiolipoma)', CONTORNOS), mm('a', 'medida 1'), mm('b', 'medida 2'), sel('terco', 'terço', TERCO), sel('rim', 'rim', RIM)], 25),
+    ],
+  },
+  {
+    id: 'rins2', titulo: 'Rins e ureteres pt2', ordem: 71, continua: true,
+    bilateral: [
+      { base: 'Nefrolitíase', resultado: 'Nefrolitíase bilateral.' },
+      { base: 'Dilatação do sistema coletor renal', resultado: 'Dilatação do sistema coletor renal bilateral.' },
+    ],
+    controles: [
       ...calculosRenais,
       {
         tipo: 'grupo', id: 'rins.calcgrp', ordem: 30, itens: ['rins.calc1', 'rins.calc2', 'rins.calc3'], genero: 'm', juntar: 'lista',
@@ -283,6 +303,7 @@ const secoes: Secao[] = [
       chk('rins.micro', 'microcálculos bilaterais X calcificações vasculares',
         'Nos seios renais são observados focos hiperecogênicos puntiformes sem sombra acústica definida, podendo corresponder a microcálculos calicinais ou calcificações vasculares.',
         'Microcálculos calicinais ou calcificações vasculares.', undefined, 36),
+      chk('rins.lim', 'Limitação do método para cálculos', '\nObs.: Cálculos renais menores que 0,4 cm podem não ser identificados devido a limitação inerente do método ecográfico.\n', undefined, undefined, 37),
       fixo('rins.semcalc', 'Não há evidências de imagens calculosas calicinais.', { ordem: 40, suprimidoPor: ['rins.calc1', 'rins.calc2', 'rins.calc3', 'rins.calcB', 'rins.micro'] }),
       esc('rins.dilD', 'select', dil('direita'), { rotulo: 'Dilatação pielocalicinal, direita', ordem: 50 }),
       esc('rins.dilE', 'select', dil('esquerda'), { rotulo: 'Dilatação pielocalicinal, esquerda', ordem: 51 }),
@@ -290,21 +311,6 @@ const secoes: Secao[] = [
       chk('rins.ureter', 'cálculo ureteral', 'Cálculo ureteral de {mm|cm} cm, {local} {lado}.', 'Cálculo ureteral {lado}.',
         [mm('mm', 'tamanho', 6), sel('local', 'local', ops('no terço proximal do ureter', 'no terço médio do ureter', 'no terço distal do ureter')),
          sel('lado', 'lado', ops('à direita', 'à esquerda'))], 56),
-      chk('rins.dopp', 'incluir Doppler das artérias renais', '{tipo}', undefined, [
-        sel('tipo', 'avaliação', [
-          { r: 'normal', t: 'A avaliação das artérias renais com Doppler demonstra curvas espectrais preservadas, com velocidades sistólicas de {vd} cm/s à direita e {ve} cm/s à esquerda.' },
-          { r: 'inacessível', t: 'Não foi possível efetuar a avaliação com Doppler das artérias renais em razão de interposição gasosa.' },
-        ]),
-        { id: 'vd', tipo: 'texto', rotulo: 'VPS direita (cm/s)' },
-        { id: 've', tipo: 'texto', rotulo: 'VPS esquerda (cm/s)' },
-      ], 57),
-      chk('rins.dopp.seg', 'Doppler das artérias segmentares', '{lado}', undefined, [
-        sel('lado', 'rim', [
-          { r: 'bilateral', t: 'Foi efetuada análise do fluxo das artérias segmentares nos seios renais, demonstrando valores de aceleração normais bilateralmente.' },
-          { r: 'rim direito', t: 'Foi efetuada análise do fluxo das artérias segmentares no seio renal direito, demonstrando valores de aceleração normais.' },
-          { r: 'rim esquerdo', t: 'Foi efetuada análise do fluxo das artérias segmentares no seio renal esquerdo, demonstrando valores de aceleração normais.' },
-        ]),
-      ], 58),
       chk('rins.duploj', 'cateter duplo J', '{lado}', 'Cateter duplo J {lado|c}.', [
         sel('lado', 'lado', [
           { r: 'à direita', c: 'à direita', t: 'Presença de cateter "duplo J" à direita, detectável na forma de ecos lineares na pelve renal e no lúmen vesical, junto ao meato ureteral.' },
@@ -312,15 +318,6 @@ const secoes: Secao[] = [
           { r: 'bilateral', c: 'bilateral', t: 'Presença de cateter "duplo J" bilateralmente, detectável na forma de ecos lineares nas pelves renais e no lúmen vesical, junto aos meatos ureterais.' },
         ]),
       ], 59),
-      // Medidas dos rins (L x T x AP em mm; deixe T/AP em branco para omitir). Sai por último, em linhas separadas.
-      chk('rins.medidas', 'incluir medidas dos rins',
-        '\nDimensões renais:\n- rim direito: {d} cm.{cpd}\n- rim esquerdo: {e} cm.{cpe}', undefined,
-        [dims('d', 'rim direito L x T x AP', 3, 90, true),
-         sel('cpd', 'parênquima direito', [{ r: 'citar espessura', t: '\n- espessura do parênquima à direita: {pd|cm} cm' }, { r: 'sem parênquima', t: '' }]),
-         mm('pd', 'espessura dir.', 11),
-         dims('e', 'rim esquerdo L x T x AP', 3, 90, true),
-         sel('cpe', 'parênquima esquerdo', [{ r: 'citar espessura', t: '\n- espessura do parênquima à esquerda: {pe|cm} cm' }, { r: 'sem parênquima', t: '' }]),
-         mm('pe', 'espessura esq.', 12)], 60),
     ],
   },
   {
@@ -363,32 +360,54 @@ export const S: Record<string, Secao> = Object.fromEntries(secoes.map((x) => [x.
 /** Mesma seção com outra posição no laudo. */
 export const com = (x: Secao, ordem: number): Secao => ({ ...x, ordem });
 
-/** Controles do resíduo pós-miccional: a classificação (ausente / desprezível / moderado / acentuado) vem do volume. */
-const controlesResid = (comConcl: boolean, marcado: boolean, ordem: number): Controle[] => [
-  { ...chk('resid.on', 'citar resíduo pós-miccional', 'Resíduo vesical pós-miccional {=residuo}.',
-      comConcl ? 'Resíduo vesical pós-miccional {=residuo}.' : undefined, [dims('v', 'medidas (mm)', 3, 0)], ordem), marcado },
+/** Controles do volume vesical, dentro do box Bexiga: pré-miccional + resíduo pós-miccional (cada um em sua linha).
+ *  O resíduo é classificado (ausente / desprezível / moderado / acentuado) a partir do volume. */
+const controlesVolume = (comConcl: boolean, marcado: boolean, residFimDe = 'fim'): Controle[] => [
+  chk('volpre.on', 'citar volume pré-miccional', '\nVolume vesical pré-miccional estimado em {v|ml} ml.', undefined, [dims('v', 'medidas', 3, 80)], 100),
+  { ...chk('resid.on', 'citar resíduo pós-miccional', '\nResíduo vesical pós-miccional {=residuo}.',
+      comConcl ? 'Resíduo vesical pós-miccional {=residuo}.' : undefined, [dims('v', 'medidas (mm)', 3, 0)], 110), marcado, fimDe: residFimDe },
   // nos exames sem conclusão fixa do resíduo, ele entra no ID só quando passa de 40 ml
-  ...(comConcl ? [] : [fixo('resid.alto', '', { ordem: 90, concl: 'Resíduo vesical pós-miccional {=residuo}.', vol: { ctl: 'resid.on', campo: 'v', op: '>' as const, limite: 40 } })]),
+  ...(comConcl ? [] : [fixo('resid.alto', '', { ordem: 190, concl: 'Resíduo vesical pós-miccional {=residuo}.', vol: { ctl: 'resid.on', campo: 'v', op: '>' as const, limite: 40 } })]),
 ];
 
-/** Só o resíduo pós-miccional (usado na próstata). */
-export const resid = (ordem: number, comConcl: boolean, marcado: boolean): Secao => ({
-  id: 'resid', titulo: 'Resíduo pós-miccional', ordem,
-  controles: controlesResid(comConcl, marcado, 0),
-});
+/** Bexiga com o volume vesical (pré + resíduo) dentro do mesmo box. residFimDe: 'fim' = última frase do laudo (e da conclusão). */
+export const bexVol = (ordem: number, comConcl: boolean, marcado: boolean, residFimDe = 'fim'): Secao =>
+  ({ ...S.bex, ordem, controles: [...S.bex.controles, ...controlesVolume(comConcl, marcado, residFimDe)] });
 
-/** Volume vesical: pré-miccional + resíduo pós-miccional no mesmo box (cada um em sua linha no laudo). */
-export const volves = (ordem: number, comConcl: boolean, marcado: boolean): Secao => ({
-  id: 'volves', titulo: 'Volume vesical', ordem, umaPorLinha: true,
-  controles: [
-    chk('volpre.on', 'citar volume pré-miccional', 'Volume vesical pré-miccional estimado em {v|ml} ml.', undefined, [dims('v', 'medidas', 3, 80)], 0),
-    ...controlesResid(comConcl, marcado, 10),
-  ],
-});
+
+// com "prostatectomia radical" ou "não citar próstata" marcados, o resto do box fica desativado
+const OMITE = ['pros.pr', 'pros.nao'];
+
+/** Box Próstata (também usado em abdome total + próstata e no aparelho urinário). */
+export const secoesProstata = (semProstata = false): Secao[] => [
+  {
+    id: 'pros', titulo: 'Próstata', ordem: 20,
+    controles: [
+      esc('pros.cont', 'select', [
+        { r: 'contornos regulares', corpo: 'Próstata de contornos regulares, com ecotextura habitual.' },
+        { r: 'contornos irregulares', corpo: 'Próstata de contornos irregulares, com ecotextura habitual.' },
+      ], { rotulo: 'Contornos', desativadoPor: OMITE }),
+      { ...chk('pros.protr', 'citar protrusão prostática intravesical', 'Protrusão prostática intravesical: {mm|cm} cm{grau}.',
+        'Protrusão prostática intravesical.',
+        [mm('mm', 'tamanho', 4), sel('grau', 'grau', [{ r: 'sem graduação', t: '' }, { r: 'grau I', t: ' (grau I)' }, { r: 'grau II', t: ' (grau II)' }, { r: 'grau III', t: ' (grau III)' }])], 20), desativadoPor: OMITE },
+      // logo depois da frase de contornos/ecotextura da próstata
+      { ...chk('pros.rtu', 'ressecção transuretral da próstata (R.T.U.)', 'Há sinais de manipulação cirúrgica por via uretral (alargamento do colo vesical).', 'Sinais de manipulação cirúrgica da próstata (ressecção transuretral).', undefined, 5), desativadoPor: OMITE },
+      { ...chk('pros.pr', 'prostatectomia radical', 'Próstata e vesículas seminais não identificadas (status pós cirúrgico).', 'Status pós-prostatectomia radical.', undefined, 0), desativadoPor: ['pros.nao'] },
+      { ...chk('pros.nao', 'não citar próstata', '', undefined, undefined, 0), desativadoPor: ['pros.pr'], marcado: semProstata },
+      { ...chk('pros.med', 'citar medidas e volume', '\nMedidas: {med} cm. Volume estimado em {med|vol} cm³ (normal até 30,0 cm³).',
+          undefined, [dims('med', 'medidas', 3, 25)], 30), marcado: !semProstata, desativadoPor: OMITE },
+      // Até 30 cm³ cita o volume na conclusão; acima disso, "Aumento prostático."
+      fixo('pros.volN', '', { ordem: 90, desativadoPor: OMITE, concl: 'Próstata com volume estimado em {med|vol} cm³.', vol: { ctl: 'pros.med', campo: 'med', op: '<=', limite: 30 } }),
+      fixo('pros.volA', '', { ordem: 91, desativadoPor: OMITE, concl: 'Aumento prostático.', vol: { ctl: 'pros.med', campo: 'med', op: '>', limite: 30 } }),
+    ],
+  },
+];
 
 export const abdomeTotal: Exame = {
   id: 'abdome-total',
   titulo: 'Abdome total',
   tituloLaudo: 'ULTRASSONOGRAFIA DO ABDOME TOTAL',
-  secoes: [...secoes.slice(0, -1), volves(81, false, false), secoes[secoes.length - 1]],
+  // citando a próstata ("não citar próstata" desmarcado), o título muda
+  tituloVar: { ctl: 'pros.nao', opcoes: { false: 'ULTRASSONOGRAFIA DO ABDOME TOTAL E PRÓSTATA', undefined: 'ULTRASSONOGRAFIA DO ABDOME TOTAL E PRÓSTATA' } },
+  secoes: secoes.flatMap((x) => (x.id === 'bex' ? [bexVol(80, false, false), ...secoesProstata(true).map((y) => ({ ...y, ordem: 85 }))] : [x])),
 };
