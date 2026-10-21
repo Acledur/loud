@@ -7,7 +7,8 @@ export function linhasParaHtml(ls: Linha[]): string {
   return ls
     .map((l) => {
       const t = escHtml(l.t).replace(/\[(?:PREENCHER|REVISAR)[^\]]*\]/g, '<mark>$&</mark>');
-      return `<p align="${l.a}" style="text-align:${l.a};margin:0">${l.t ? (l.b ? `<b>${t}</b>` : t) : '<br>'}</p>`;
+      const tab = l.t.includes('\t') ? ';white-space:pre-wrap;tab-size:3.5cm' : '';
+      return `<p align="${l.a}" style="text-align:${l.a};margin:0${tab}">${l.t ? (l.b ? `<b>${t}</b>` : t) : '<br>'}</p>`;
     })
     .join('');
 }
@@ -21,11 +22,12 @@ const alinhamento = (b: Element) => {
  * HTML para colar no Word. Lê o alinhamento REAL de cada parágrafo do editor (inclusive o que você mudou
  * com os botões) e grava no formato que o Word usa (classe MsoNormal + atributo align + estilo).
  */
-export function htmlParaCopia(el: HTMLElement): string {
+export function htmlParaCopia(el: HTMLElement, pt = 12): string {
   const blocos = Array.from(el.children).map((b) => {
     const a = alinhamento(b);
     const interno = b.innerHTML.replace(/<\/?mark[^>]*>/g, '');
-    return `<p class="MsoNormal" align="${a}" style="margin:0cm;text-align:${a};font-family:'Times New Roman',serif;font-size:12pt">${interno}</p>`;
+    const tab = interno.includes('\t') ? ';white-space:pre-wrap;tab-size:3.5cm;mso-tab-stops:3.5cm 7cm' : '';
+    return `<p class="MsoNormal" align="${a}" style="margin:0cm;text-align:${a};font-family:'Times New Roman',serif;font-size:${pt}pt${tab}">${interno}</p>`;
   });
   return blocos.length ? blocos.join('') : el.innerHTML.replace(/<\/?mark[^>]*>/g, '');
 }
@@ -36,7 +38,8 @@ const rtfTxt = (s: string) => {
   for (let i = 0; i < s.length; i++) {
     const c = s.charCodeAt(i);
     const ch = s[i];
-    if (ch === '\\' || ch === '{' || ch === '}') o += '\\' + ch;
+    if (ch === '\t') o += '\\tab ';
+    else if (ch === '\\' || ch === '{' || ch === '}') o += '\\' + ch;
     else if (c < 128) o += ch;
     else o += `\\u${c > 32767 ? c - 65536 : c}?`;
   }
@@ -60,7 +63,7 @@ function pictRtf(uri: string): string {
 }
 
 /** Converte o conteúdo do editor em um arquivo RTF. Imagens (PNG) entram no cabeçalho/rodapé de cada página. */
-export function htmlParaRtf(el: HTMLElement, imgs: { cab?: string; rod?: string } = {}): string {
+export function htmlParaRtf(el: HTMLElement, imgs: { cab?: string; rod?: string } = {}, pt = 12): string {
   const cab = imgs.cab ? pictRtf(imgs.cab) : '';
   const rod = imgs.rod ? pictRtf(imgs.rod) : '';
   const pagina = cab || rod
@@ -79,7 +82,7 @@ export function htmlParaRtf(el: HTMLElement, imgs: { cab?: string; rod?: string 
         out += `{${negrito ? '\\b ' : ''}${cs.fontStyle === 'italic' ? '\\i ' : ''}${rtfTxt(n.textContent ?? '')}}`;
       }
     }
-    return `\\pard${al[alinhamento(p)]}\\sa0 ${out}\\par`;
+    return `\\pard${al[alinhamento(p)]}\\sa0${p.textContent?.includes('\t') ? '\\tx1985\\tx3969' : ''} ${out}\\par`;
   });
-  return `{\\rtf1\\ansi\\ansicpg1252\\deff0{\\fonttbl{\\f0 Times New Roman;}}${pagina}\\f0\\fs24 ${paragrafos.join('\n')}}`;
+  return `{\\rtf1\\ansi\\ansicpg1252\\deff0{\\fonttbl{\\f0 Times New Roman;}}${pagina}\\f0\\fs${pt * 2} ${paragrafos.join('\n')}}`;
 }

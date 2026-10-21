@@ -102,6 +102,7 @@ export type Exame = {
   id: string;
   titulo: string;       // nome no menu
   tituloLaudo: string;  // título impresso no laudo
+  fontePt?: number;      // tamanho da fonte do laudo (padrão 12 pt)
   semRestante?: boolean; // true: o ID não termina com "Restante do exame sem particularidades."
   obs?: string[];        // observações impressas depois do ID (ex.: aviso dos exames obstétricos)
   fim?: string[];        // linhas finais do ID, depois do "Restante..." (aceita {=val:idDoControle}), ex.: BI-RADS

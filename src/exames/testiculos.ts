@@ -142,6 +142,7 @@ export const testiculos: Exame = {
   secoes: [
     secao('te.liq', 'Líquido (hemibolsas)', 10, liquido, { umaPorLinha: true, bilateral: bil('Hidrocele') },
       [fixo('te.liq.n', 'Líquido em quantidade fisiológica na bolsa testicular.', { ordem: 0, suprimidoPor: [id(D, 'liq'), id(E, 'liq')] })]),
+    secao('te.dim', 'Dimensões dos testículos', 40, medidas, { umaPorLinha: true }),
     secao('te.tes', 'Testículos', 20, testiculo, {
       umaPorLinha: true,
       bilateral: bil('Status pós-orquiectomia', 'Criptorquidia', 'Ecotextura testicular heterogênea', 'Sinais de microlitíase testicular').concat(
@@ -152,7 +153,6 @@ export const testiculos: Exame = {
       umaPorLinha: true,
       bilateral: bil('Redução do fluxo vascular intratesticular', 'Ausência de fluxo vascular intratesticular', 'Aumento do fluxo vascular intratesticular'),
     }),
-    secao('te.dim', 'Dimensões dos testículos', 40, medidas, { umaPorLinha: true }),
     secao('te.plx', 'Plexo pampiniforme', 50, plexo, { umaPorLinha: true, bilateral: bil('Sinais de varicocele') },
       normais('te.plx', 'Não há dilatação das veias do plexo pampiniforme bilateralmente.',
         (l) => `Não há dilatação das veias do plexo pampiniforme à ${l.a}.`, (l) => [id(l, 'plx')], 10)),

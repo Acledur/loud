@@ -76,7 +76,8 @@ summary { cursor: pointer; color: var(--suave); font-size: 13px; }
   .topo, .cabecalho, .form, .laudo .barra, .laudo .nota, .laudo .alerta, .laudo .fmt, .laudo .acoes, .laudo details { display: none !important; }
   .corpo { display: block; padding: 0; }
   .laudo { position: static; border: 0; padding: 0 2.5cm; max-height: none; gap: 0; min-height: 27.5cm; }
-  .editor { border: 0; padding: 0; max-height: none; overflow: visible; font-size: 12pt; }
+  .editor { border: 0; padding: 0; max-height: none; overflow: visible; font-size: 12pt; line-height: 1.15; }
+  .editor p { min-height: 1.15em; }
   .editor mark { background: none; }
   /* logo no topo da 1ª página; endereço no fim da última (colado embaixo quando o laudo cabe numa página) */
   .timbre { display: block; width: 100%; max-height: 3.9cm; object-fit: contain; }

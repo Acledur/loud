@@ -10,16 +10,15 @@ const ART = ops('comum', 'interna', 'externa');
 const texto = (id: string, rotulo: string): Campo => ({ id, tipo: 'texto', rotulo, padrao: '' });
 const ID = { ateroma: 'car.ateroma', placa: 'car.placa', esp: 'car.esp', e0: 'car.e0', e50: 'car.e50', e70: 'car.e70', ocl: 'car.ocl', kink: 'car.kink' };
 const SUP_CALIBRE = [ID.e0, ID.e50, ID.e70, ID.ocl, ID.kink];
-const SUP_PAREDE = [ID.ateroma, ID.placa, ID.esp, ID.e0, ID.e50, ID.e70, ID.ocl];
-const SUP_ESPEC = [ID.esp, ID.e0, ID.e50, ID.e70, ID.ocl, ID.kink];
+const SUP_PAREDE = [ID.ateroma, ID.placa, ID.e0, ID.e50, ID.e70, ID.ocl];
+const SUP_ESPEC = [ID.e0, ID.e50, ID.e70, ID.ocl, ID.kink];
 
 const PLACA = 'Artéria carótida {art} {lado} apresenta diâmetro reduzido por placa aterosclerótica';
 const ESTENOSE = (id: string, corpo: string, concl: string, extra: Campo[] = [], ordem: number): Check =>
   chk(id, `Estenose carotídea ${concl.slice(concl.lastIndexOf('}') + 2).replace('.', '')}`, corpo, `Estenose da artéria carótida {art} {lado} ${concl.slice(concl.lastIndexOf('}') + 2)}`,
     [sel('art', 'artéria', ART), sel('lado', 'lado', LADO), ...extra], ordem);
 
-const esp: Check = chk(ID.esp, 'Espessamento médio-intimal difuso', '\nA artéria carótida comum {lado} apresenta-se com diâmetro normal, caracterizando espessamento médio-intimal difuso, com média de {med} mm, associado a pequenas calcificações parietais e placas ateromatosas {tp}. Ao estudo Doppler observa-se curva espectral de amplitude normal, sem turbulência e aceleração.',
-    'Espessamento médio-intimal da artéria carótida comum {lado}.', [sel('lado', 'lado', LADO), texto('med', 'média (mm)'), sel('tp', 'placas', ops('hipoecogênicas', 'hiperecogênicas', 'calcificadas'))], 30);
+const esp: Check = chk(ID.esp, 'Espessamento médio-intimal (só na conclusão)', '', 'Espessamento médio-intimal da artéria carótida comum {lado}.', [sel('lado', 'lado', LADO)], 30);
 
 const achados: Check[] = [
   chk(ID.ateroma, 'Ateromatose carotídea', 'Ateromatose carotídea {lado}, com placas calcificadas nos bulbos carotídeos, sem causar repercussão hemodinâmica.', 'Ateromatose carotídea {lado}.',
@@ -42,7 +41,7 @@ const ARTS = ['ACCD', 'ACCE', 'ACID', 'ACIE', 'ACED', 'ACEE', 'AVD', 'AVE'];
 const secoes: Secao[] = [
   {
     id: 'car.vel', titulo: 'Velocidades (cm/s)', ordem: 60,
-    controles: [{ ...chk('car.vel', 'citar velocidades (VPSM / VPDM)', '¶\n' + ARTS.map((k) => `${k} - VPSM: {${k}s} cm/s; VPDM: {${k}d} cm/s`).join('\n'), undefined,
+    controles: [{ ...chk('car.vel', 'citar velocidades (VPSM / VPDM)', '¶\n\u200b\tVPSM (cm/s)\tVPDM (cm/s)\n' + ARTS.map((k) => `${k} -\t{${k}s}\t{${k}d}`).join('\n'), undefined,
       ARTS.flatMap((k, i) => [i ? texto(`${k}s`, k) : { ...texto(`${k}s`, k), cab: ['VPS', 'VPD'] }, texto(`${k}d`, k)]), 10), marcado: true }],
   },
   {
@@ -74,6 +73,7 @@ export const carotidas: Exame = {
   titulo: 'Doppler de carótidas e vertebrais',
   tituloLaudo: 'ULTRASSONOGRAFIA COM DOPPLER DAS ARTÉRIAS CARÓTIDAS E VERTEBRAIS',
   semRestante: true,
-  idNormal: 'Ultra-sonografia com Doppler-Fluxometria das Artérias Carótidas e Vertebrais dentro da normalidade.',
+  fontePt: 11, // fonte menor p/ caber em 1 página
+  idNormal: 'Ultrassonografia com Doppler-Fluxometria das Artérias Carótidas e Vertebrais dentro da normalidade.',
   secoes,
 };

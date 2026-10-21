@@ -105,7 +105,7 @@ export const obstetrico2: Exame = {
     {
       id: 'ob2.bio', titulo: 'Biometria fetal', ordem: 20, controles: [
         bloco('ob2.bio', [texto('dbp', 'DBP (cm)'), texto('cc', 'CC (cm)'), texto('ca', 'CA (cm)'), texto('cf', 'CF (cm)'), texto('peso', 'peso aproximado (g)')],
-          `Biometria fetal:\nDBP: {dbp} cm${NB}CC: {cc} cm\nCA: {ca} cm\nCF: {cf} cm\nPeso aproximado: {peso} g (+/- 15%).`, 0),
+          `¶\nBiometria fetal:\nDBP: {dbp} cm${NB}CC: {cc} cm\nCA: {ca} cm\nCF: {cf} cm\nPeso aproximado: {peso} g (+/- 15%).\n¶`, 0),
       ],
     },
     {

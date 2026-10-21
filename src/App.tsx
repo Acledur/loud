@@ -113,7 +113,7 @@ export default function App() {
   function copiar() {
     if (pend > 0 && !confirm(`O laudo ainda tem ${pend} pendência(s) entre colchetes. Copiar mesmo assim?`)) return;
     const el = ed.current!;
-    const html = htmlParaCopia(el); // alinhamento lido de cada parágrafo
+    const html = htmlParaCopia(el, exame.fontePt); // alinhamento lido de cada parágrafo
     const txt = el.innerText;
     const fim = (m: string) => { setAviso(m); setTimeout(() => setAviso(''), 2500); };
     // 1) via evento "copy": entrega HTML + texto puro, funciona mesmo onde a API de clipboard é restrita
@@ -145,7 +145,7 @@ export default function App() {
 
   // Alternativa que garante o alinhamento: arquivo RTF, que o Word abre direto.
   function baixarRtf() {
-    const blob = new Blob([htmlParaRtf(ed.current!, { cab: imgCab, rod: imgRod })], { type: 'application/rtf' });
+    const blob = new Blob([htmlParaRtf(ed.current!, { cab: imgCab, rod: imgRod }, exame.fontePt)], { type: 'application/rtf' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     // nome do arquivo: "Paciente - Exame.rtf" (sem o paciente: "Exame.rtf")
@@ -205,7 +205,7 @@ export default function App() {
             ))}
           </div>
           {imgCab && <img className="timbre cab" src={imgCab} alt="" />} {/* só aparece na impressão */}
-          <div ref={ed} className="editor" contentEditable suppressContentEditableWarning spellCheck={false}
+          <div ref={ed} className="editor" style={exame.fontePt ? { fontSize: `${exame.fontePt}pt`, lineHeight: 1.25 } : undefined} contentEditable suppressContentEditableWarning spellCheck={false}
             aria-label="Texto do laudo" onInput={() => { setEditado(true); lerPend(); }} />
           {imgRod && <img className="timbre rod" src={imgRod} alt="" />} {/* só aparece na impressão */}
           <div className="acoes">

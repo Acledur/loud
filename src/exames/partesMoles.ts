@@ -3,13 +3,13 @@
 // Frases normais somem quando algo as contradiz (suprimidoPor). ID normal próprio (idNormal).
 // ============================================================================
 import type { Campo, Exame, Opc, Secao } from '../tipos';
-import { chk, dims, esc, fixo, mm, sel } from './abdomeTotal';
+import { chk, dims, esc, fixo, mm, ops, sel } from './abdomeTotal';
 
 const texto = (id: string, rotulo: string, padrao = ''): Campo => ({ id, tipo: 'texto', rotulo, padrao });
 
 // alterações que contradizem as frases normais
 const SUBCUT = ['pm.cisto', 'pm.lipoma', 'pm.seroma', 'pm.abscesso'];
-const HERNIAS = ['pm.hum', 'pm.hep'];
+const HERNIAS = ['pm.hum', 'pm.hep', 'pm.ing'];
 
 const NIVEL: Opc[] = ['epigástrio', 'mesogástrio', 'hipogástrio'].map((r) => ({ r }));
 const CONTEUDO: Opc[] = [{ r: 'tecido adiposo' }, { r: 'tecido adiposo e alças intestinais' }];
@@ -57,6 +57,25 @@ const secoes: Secao[] = [
         'Na região {reg}, em topografia mediana, observa-se um saco herniário contendo {cont}, medindo {med} cm, com colo de {colo|cm} cm.',
         '{reg|c}',
         [dims('med', 'medidas (mm)', 2, 20), mm('colo', 'colo (mm)', 10), sel('reg', 'região', REGIAO_HERNIA), sel('cont', 'conteúdo', CONTEUDO)]),
+    ],
+  },
+  {
+    id: 'pming', titulo: 'Hérnia inguinal', ordem: 35,
+    controles: [
+      esc('pm.ing', 'radio', [
+        { r: 'ausente' },
+        {
+          r: 'presente',
+          campos: [
+            sel('lado', 'lado', ops('direita', 'esquerda')),
+            sel('cont', 'conteúdo da hérnia', ops('alças intestinais', 'tecido adiposo')),
+            sel('mdd', 'medidas', [{ r: 'citar medidas', t: ', medindo {med} cm, com colo de {colo|cm} cm' }, { r: 'não citar medidas', t: '' }]),
+            dims('med', 'saco herniário mede (mm)', 2, 10), mm('colo', 'colo mede (mm)', 10),
+          ],
+          corpo: 'Na região inguinal {lado} observa-se saco herniário contendo {cont}, com variação de volume às manobras compressivas e respiratórias{mdd}.',
+          concl: 'Hérnia inguinal à {lado}.',
+        },
+      ]),
     ],
   },
   {
