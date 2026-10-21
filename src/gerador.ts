@@ -156,6 +156,35 @@ const CALCULOS: Record<string, (r: Resp, arg?: string) => string> = {
     const a = num(r['ob2.dop.au_ip']), c = num(r['ob2.dop.acm_ip']);
     return Number.isFinite(a) && Number.isFinite(c) && c > 0 ? (a / c).toFixed(2).replace('.', ',') : '[PREENCHER]';
   },
+  dopconcl: (r) => {
+    const acm = r['ob2.dop.acm_alt'] !== 'normal' && r['ob2.dop.acm_alt'] !== undefined, au = r['ob2.dop.au_alt'] !== 'normal' && r['ob2.dop.au_alt'] !== undefined, ut = r['ob2.dop.ut_alt'] !== 'normal' && r['ob2.dop.ut_alt'] !== undefined;
+    const f: string[] = [];
+    if (acm && au) f.push('Alterações nos índices de resistência das artérias cerebrais médias (reduzidos) e umbilicais (aumentados). O conjunto de achados podem estar relacionados à centralização hemodinâmica e algum grau de hipoxemia fetal.');
+    else if (acm) f.push('As artérias cerebrais médias apresentam índices de resistência reduzidos, podendo estar relacionadas com centralização hemodinâmica fetal e algum grau de hipoxemia fetal.');
+    else if (au) f.push('Artérias umbilicais apresentam índices de resistência aumentados, compatível com aumento da resistência arterial placentária.');
+    if (ut) f.push('A análise espectral das artérias uterinas apresentou índices de resistência aumentados para a atual fase gestacional, achado que pode estar relacionado com risco aumentado de pré-eclâmpsia/restrição do crescimento intrauterino.');
+    return f.length ? f.join('\n') : 'Estudo Doppler das artérias cerebral média, umbilical e uterinas com padrão espectral habitual.';
+  },
+  // glândulas salivares normais numa frase só (ex.: "Glândulas submandibulares e parótida esquerda de dimensões normais...")
+  // Doppler de carótidas: complexo médio-intimal (cm) e HD automático quando > 0,1 cm
+  imt: (r) => {
+    const d = String(r['car.imt.d'] ?? '').trim() || '[PREENCHER]', e = String(r['car.imt.e'] ?? '').trim() || '[PREENCHER]';
+    return d === e ? `Complexo médio-intimal direito e esquerdo medem ${d} cm cada (normal até 0,08 cm).` : `Complexo médio-intimal direito mede ${d} cm e esquerdo mede ${e} cm (normal até 0,08 cm).`;
+  },
+  imtc: (r, a) => (Number(String(r[`car.imt.${a}`] ?? '').replace(',', '.')) > 0.1 ? `Espessamento médio-intimal da artéria carótida comum ${a === 'd' ? 'direita' : 'esquerda'}.` : ''),
+  salnorm: (r) => {
+    const todos: string[] = [], parc: string[] = [];
+    for (const [k, pl, sg] of [['par', 'parótidas', 'parótida'], ['sub', 'submandibulares', 'submandibular'], ['sbl', 'sublinguais', 'sublingual']]) {
+      const o = String(r[`sal.${k}`]);
+      if (o === 'n') { todos.push(pl); continue; }
+      const l = String(o === 'sia' ? r[`sal.${k}.lsi`] : r[`sal.${k}.lado`]);
+      if (l === 'direita') parc.push(`${sg} esquerda`); else if (l === 'esquerda') parc.push(`${sg} direita`);
+    }
+    const it = [...todos, ...parc];
+    if (!it.length) return '';
+    const lista = it.length > 1 ? `${it.slice(0, -1).join(', ')} e ${it[it.length - 1]}` : it[0];
+    return `${todos.length || it.length > 1 ? 'Glândulas' : 'Glândula'} ${lista} de dimensões normais, contornos regulares e ecotextura característica.`;
+  },
   tendnorm: (r, a) => {
     const n = MANGUITO.filter((t) => normalOm(r, t.k));
     if (!n.length || n[0].k !== a) return '';
@@ -379,17 +408,17 @@ export function gerarLaudo(ex: Exame, r: Resp, opts: { cabecalho?: string; rodap
   const vazia: Linha = { t: '', a: 'left' };
   const linhas: Linha[] = [];
   cab.forEach((t) => linhas.push({ t, a: 'left', b: true }));            // cabeçalho: esquerda, negrito
-  if (cab.length) linhas.push(vazia);
+  if (cab.length) linhas.push(vazia, vazia);
   const titulo = ex.tituloVar ? (ex.tituloVar.opcoes[String(r[ex.tituloVar.ctl])] ?? ex.tituloLaudo) : ex.tituloLaudo;
   linhas.push({ t: titulo, a: 'center', b: true }, vazia);        // título: centralizado, negrito
   // parágrafos que começam com "Obs.:" saem logo acima do ID, com linha em branco antes e depois
-  paragrafos.filter((t) => !t.startsWith('Obs.:')).forEach((t) => linhas.push({ t, a: 'justify' }));
+  paragrafos.filter((t) => !t.startsWith('Obs.:')).forEach((t) => linhas.push({ t: t === '¶' ? '' : t, a: 'justify' })); // '¶' = linha em branco
   const obsMetodo = paragrafos.filter((t) => t.startsWith('Obs.:'));
   if (obsMetodo.length) linhas.push(vazia, ...obsMetodo.map((t): Linha => ({ t, a: 'justify' })));
   linhas.push(vazia, { t: 'ID:', a: 'left', b: true });                   // "ID:" em negrito
   const fim = (ex.fim ?? []).map((t) => t.replace(/\{=val:([\w.]+)\}/g, (_, k: string) => String(r[k] ?? '')));
   [...id, ...fim].forEach((t) => linhas.push({ t, a: 'justify' }));
   if (ex.obs?.length) linhas.push(vazia, ...ex.obs.map((t): Linha => ({ t, a: 'justify' })));
-  if (rod.length) linhas.push(vazia, vazia, ...rod.map((t): Linha => ({ t, a: 'left', b: true }))); // rodapé: esquerda, negrito
+  if (rod.length) linhas.push(vazia, vazia, vazia, vazia, vazia, ...rod.map((t): Linha => ({ t, a: 'left', b: true }))); // rodapé: esquerda, negrito
   return { texto: linhas.map((l) => l.t).join('\n'), linhas, paragrafos, conclusoes: id };
 }

@@ -30,6 +30,10 @@ button.link { border: 0; background: none; padding: 0; color: var(--acento); tex
 .op input { margin-top: 4px; }
 .sub { display: block; margin-top: 4px; }
 .campos { display: flex; flex-wrap: wrap; gap: 6px 10px; margin: 2px 0 6px 22px; padding: 6px 8px; background: var(--acento-fraco); border-radius: 4px; }
+.grade { display: grid; gap: 4px 10px; align-items: center; justify-content: start; }
+.grade b { font-size: 13px; color: var(--suave); text-align: center; }
+.grade span { color: var(--suave); font-size: 13px; }
+.grade input { width: 100%; padding: 3px 5px; border: 1px solid var(--linha); border-radius: 3px; background: #fff; }
 .campo { display: flex; align-items: center; gap: 6px; }
 .campo > span { color: var(--suave); font-size: 13px; }
 .campo input[type=number] { width: 72px; }

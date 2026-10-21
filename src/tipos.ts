@@ -20,6 +20,7 @@ export type Campo = {
   padrao?: string | number | number[]; // number[] em 'dims': um valor por medida
   opcoes?: Opc[]; // para tipo 'sel'
   n?: 2 | 3;      // para tipo 'dims': quantidade de medidas (mm)
+  cab?: string[]; // 1º campo de uma lista: mostra os campos em grade (linhas = rótulo; colunas = estes títulos)
   opc?: boolean;  // para 'dims': só a 1ª medida é obrigatória (as outras podem ficar em branco)
 };
 

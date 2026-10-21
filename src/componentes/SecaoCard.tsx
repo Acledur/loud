@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import type { Campo, Controle, Resp, Secao } from '../tipos';
 import { medidas, oid, volumeMl } from '../gerador';
 
@@ -48,6 +49,23 @@ function CampoUI({ c, pre, resp, set }: { c: Campo; pre: string; resp: Resp; set
 
 function Campos({ campos, pre, resp, set }: { campos?: Campo[]; pre: string; resp: Resp; set: Setter }) {
   if (!campos?.length) return null;
+  const cab = campos[0].cab;
+  if (cab) {
+    const n = cab.length;
+    return (
+      <div className="campos grade" style={{ gridTemplateColumns: `auto repeat(${n}, 90px)` }}>
+        <span />{cab.map((h) => <b key={h}>{h}</b>)}
+        {Array.from({ length: Math.floor(campos.length / n) }, (_, i) => (
+          <Fragment key={i}>
+            <span>{campos[i * n].rotulo}</span>
+            {campos.slice(i * n, i * n + n).map((c) => (
+              <input key={c.id} value={String(resp[`${pre}.${c.id}`] ?? '')} onChange={(e) => set(`${pre}.${c.id}`, e.target.value)} />
+            ))}
+          </Fragment>
+        ))}
+      </div>
+    );
+  }
   return (
     <div className="campos">
       {campos.map((c) => <CampoUI key={c.id} c={c} pre={pre} resp={resp} set={set} />)}

@@ -11,6 +11,8 @@ import { ombro } from './exames/ombro';
 import { mamas } from './exames/mamas';
 import { cotovelo } from './exames/cotovelo';
 import { partesMoles } from './exames/partesMoles';
+import { testiculos } from './exames/testiculos';
+import { carotidas } from './exames/carotidas';
 import { obstetrico1, obstetrico2 } from './exames/obstetricia';
 import { linhasParaHtml } from './rico';
 
@@ -231,7 +233,7 @@ describe('rins: bilateral e padrões', () => {
 });
 
 // ---------- guardas para TODOS os exames ----------
-const TODOS = [ex, abdomeSuperior, apUrinario, prostata, tireoide, transvaginal, joelho, ombro, obstetrico1, obstetrico2, mamas, cotovelo, partesMoles];
+const TODOS = [ex, abdomeSuperior, apUrinario, prostata, tireoide, transvaginal, joelho, ombro, obstetrico1, obstetrico2, mamas, cotovelo, partesMoles, testiculos, carotidas];
 const marcaTudo = (e: typeof ex) => {
   const r: Record<string, string | number | boolean> = { ...respInicial(e) };
   for (const s of e.secoes) for (const c of s.controles) if (c.tipo === 'check') {
@@ -243,7 +245,7 @@ const marcaTudo = (e: typeof ex) => {
   return r;
 };
 describe('todos os exames', () => {
-  for (const e of TODOS.filter((x) => !x.id.startsWith('obstetrico'))) { // (obstétricos: medidas em branco de propósito; ver abaixo)
+  for (const e of TODOS.filter((x) => !x.id.startsWith('obstetrico') && x.id !== 'carotidas')) { // (obstétricos e carótidas: medidas em branco de propósito)
     it(`${e.id}: padrão não tem pendências`, () => {
       const t = gerarLaudo(e, respInicial(e)).texto;
       expect(contarPendencias(t)).toBe(0);
@@ -913,3 +915,20 @@ describe('ajustes (próstata, rins, fígado, mamas)', () => {
   });
 });
 
+
+describe('bolsa testicular', () => {
+  const gt = (o = {}) => gerarLaudo(testiculos, { ...respInicial(testiculos), ...o }).texto;
+  it('normal: frases bilaterais e volume', () => {
+    const t = gt();
+    expect(t).toContain('Líquido em quantidade fisiológica na bolsa testicular.');
+    expect(t).toContain('O testículo direito apresenta dimensões normais, medindo: 4,0 x 2,5 x 2,0 cm. Volume = 10,5 cm³.');
+    expect(t).toContain('Não há dilatação das veias do plexo pampiniforme bilateralmente.');
+  });
+  it('alterado: hidrocele, criptorquidia + nódulo, conclusão bilateral', () => {
+    const t = gt({ 'te.d.liq': 'hidrocele', 'te.e.liq': 'hidrocele', 'te.e.crip': true, 'te.e.nod': true });
+    expect(t).toContain('Testículo esquerdo em topografia anômala, situado no canal inguinal.');
+    expect(t).toContain('Testículo esquerdo de contornos regulares. Nota-se um nódulo sólido hipoecogênico');
+    expect(t).toContain('Hidrocele bilateral.');
+    expect(t).toContain('Criptorquidia à esquerda.');
+  });
+});

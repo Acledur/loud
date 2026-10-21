@@ -27,7 +27,7 @@ const GRUPOS: Opc[] = [
   { r: 'médio', t: 'grupamento calicinal médio' },
   { r: 'inferior', t: 'grupamento calicinal inferior' },
 ];
-const ECO = ops('hiperecogênico', 'hipoecogênico', 'isoecogênico');
+const ECO: Opc[] = [{ r: 'hiperecogênico (hemangioma)', t: 'hiperecogênico', c: 'hiperecogênico, compatível com hemangioma' }, ...ops('hipoecogênico', 'isoecogênico')];
 const CONTORNOS = ops('regulares', 'irregulares', 'lobulados');
 const BEIRA = 'Exame realizado à beira do leito em paciente internado, com restrições de posicionamento e cooperação que limitam parcialmente a acurácia do método.';
 const COLECAO: Opc[] = [{ r: 'sem coleção', t: '' }, { r: 'com coleção', t: ' e coleção líquida adjacente' }];
@@ -114,7 +114,7 @@ const secoes: Secao[] = [
         'Cistos hepáticos simples.', [mm('mm', 'maior', 5), sel('seg', 'segmento', ops(...SEG))], 21),
       chk('fig.nodulo', 'nódulo',
         'Nódulo {eco}, de contornos {contornos}, medindo {a|cm} x {b|cm} cm, localizado no {seg}.',
-        'Nódulo hepático {eco}.',
+        'Nódulo hepático {eco|c}.',
         [sel('eco', 'ecogenicidade', ECO), sel('contornos', 'contornos', CONTORNOS), mm('a', 'medida 1'), mm('b', 'medida 2'), sel('seg', 'segmento', ops(...SEG))], 22),
       chk('fig.nodulos', 'nódulos (vários)',
         '{qtd} {tipo} de contornos regulares{qtd|c} {a|cm} cm ({sa}) e {b|cm} cm ({sb}).',

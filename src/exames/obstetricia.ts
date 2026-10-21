@@ -80,6 +80,7 @@ export const obstetrico2: Exame = {
   id: 'obstetrico2',
   titulo: 'Obstétrica 2º/3º trimestre',
   tituloLaudo: 'ULTRASSONOGRAFIA OBSTÉTRICA',
+  tituloVar: { ctl: 'ob2.dop', opcoes: { true: 'ULTRASSONOGRAFIA OBSTÉTRICA COM DOPPLER' } },
   semRestante: true,
   obs: OBS,
   secoes: [
@@ -123,9 +124,10 @@ export const obstetrico2: Exame = {
     {
       id: 'ob2.dopsec', titulo: 'Doppler obstétrico', ordem: 40, controles: [
         chk('ob2.dop', 'incluir estudo Doppler-duplex color',
-          `\nAO ESTUDO DOPPLER-DUPLEX COLOR, EVIDENCIAMOS:\n${linhaDop('acm', 'Artéria cerebral média')}\n${linhaDop('au', 'Artéria umbilical')}\n${linhaDop('utd', 'Artéria uterina direita')}\n${linhaDop('ute', 'Artéria uterina esquerda')}\nRelação art. umbilical/art. cerebral média = {=rum} (normal < 1).`,
-          'Estudo Doppler das artérias cerebral média, umbilical e uterinas com padrão espectral habitual.',
-          [...dop('acm', 'A. cerebral média'), ...dop('au', 'A. umbilical'), ...dop('utd', 'A. uterina direita'), ...dop('ute', 'A. uterina esquerda')], 0),
+          `\n¶\nAO ESTUDO DOPPLER-DUPLEX COLOR, EVIDENCIAMOS:\n¶\n${linhaDop('acm', 'Artéria cerebral média')}\n${linhaDop('au', 'Artéria umbilical')}\n${linhaDop('utd', 'Artéria uterina direita')}\n${linhaDop('ute', 'Artéria uterina esquerda')}\nRelação art. umbilical/art. cerebral média = {=rum} (normal < 1).\n`,
+          '{=dopconcl}',
+          [...dop('acm', 'A. cerebral média'), ...dop('au', 'A. umbilical'), ...dop('utd', 'A. uterina direita'), ...dop('ute', 'A. uterina esquerda'),
+            sel('acm_alt', 'Cerebral média (ACM)', ops('normal', 'ACM alterada')), sel('au_alt', 'Umbilical', ops('normal', 'Artéria umbilical alterada')), sel('ut_alt', 'Uterinas', ops('normal', 'uterinas alteradas'))], 0),
       ],
     },
   ],

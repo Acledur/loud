@@ -10,6 +10,8 @@ import { ombro } from './exames/ombro';
 import { mamas } from './exames/mamas';
 import { cotovelo } from './exames/cotovelo';
 import { partesMoles } from './exames/partesMoles';
+import { testiculos } from './exames/testiculos';
+import { carotidas } from './exames/carotidas';
 import { obstetrico1, obstetrico2 } from './exames/obstetricia';
 import { contarPendencias, desativados, gerarLaudo, respInicial } from './gerador';
 import { htmlParaCopia, htmlParaRtf, linhasParaHtml } from './rico';
@@ -27,7 +29,7 @@ const CHAVE_ROD = 'laudos-us:img-rod';
 const lerImg = (k: string, padrao: string) => { try { const v = localStorage.getItem(k); return v === null ? padrao : v === '-' ? '' : v; } catch { return padrao; } };
 const gravarImg = (k: string, v: string, padrao: string) => { try { if (v === padrao) localStorage.removeItem(k); else localStorage.setItem(k, v || '-'); } catch { /* ignora */ } };
 
-const EXAMES = [abdomeTotal, abdomeSuperior, apUrinario, prostata, tireoide, mamas, transvaginal, obstetrico1, obstetrico2, joelho, ombro, cotovelo, partesMoles]; // novos exames entram aqui
+const EXAMES = [abdomeTotal, abdomeSuperior, apUrinario, prostata, tireoide, mamas, transvaginal, obstetrico1, obstetrico2, joelho, ombro, cotovelo, partesMoles, testiculos, carotidas]; // novos exames entram aqui
 const FMT: [string, string, string][] = [
   ['bold', 'N', 'Negrito'], ['italic', 'I', 'Itálico'],
   ['justifyLeft', 'Esq.', 'Alinhar à esquerda'], ['justifyCenter', 'Centro', 'Centralizar'],

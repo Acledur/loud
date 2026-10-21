@@ -204,6 +204,37 @@ const secoes: Secao[] = [
   },
 ];
 
+// Glândulas salivares: só entram no laudo se "descrever" estiver marcado. A frase "normais" é montada por {=salnorm} (gerador.ts).
+const GL = (pl: string, sg: string): Opc[] => [
+  { r: 'bilateralmente', t: `Glândulas ${pl}`, c: `das glândulas ${pl}` },
+  { r: 'direita', t: `Glândula ${sg} direita`, c: `da glândula ${sg} direita` },
+  { r: 'esquerda', t: `Glândula ${sg} esquerda`, c: `da glândula ${sg} esquerda` },
+];
+const glandula = (k: string, rotulo: string, pl: string, sg: string, ordem: number, sialo: boolean) => {
+  const alt = (id: string, r: string, dim: string, resumo: string): Opc => ({
+    id, r, campos: [sel('lado', 'lado', GL(pl, sg))],
+    corpo: `{lado} com dimensões ${dim} e ecotextura difusamente heterogênea.`, concl: `Heterogeneidade e ${resumo} {lado|c}.`,
+  });
+  const opcoes: Opc[] = [{ id: 'n', r: 'normais' }, alt('aum', 'heterogeneidade com aumento de volume', 'aumentadas', 'aumento volumétrico'), alt('red', 'heterogeneidade com redução de volume', 'reduzidas', 'redução volumétrica')];
+  if (sialo) opcoes.push({
+    id: 'sia', r: 'sialolitíase', campos: [sel('lsi', 'lado', LADO), mm('duc', 'calibre máximo do ducto (mm)', 3), mm('calc', 'cálculo (mm)', 5)],
+    corpo: `Glândula ${sg} {lsi} com ecotextura difusamente heterogênea e volume aumentado, notando-se ectasia do ducto principal, que apresenta calibre máximo de {duc|cm} cm, notando-se cálculo de {calc|cm} cm.`,
+    concl: `Ectasia ductal na glândula ${sg} {lsi}, com cálculo demonstrável (sialolitíase).`,
+  });
+  return esc(`sal.${k}`, 'radio', opcoes, { rotulo, ordem });
+};
+secoes.push({
+  id: 'salivares', titulo: 'Glândulas salivares', ordem: 50, umaPorLinha: true,
+  desativadoPor: ['sal.on=nao'], exceto: ['sal.on'],
+  controles: [
+    esc('sal.on', 'radio', [{ id: 'nao', r: 'não descrever glândulas salivares' }, { id: 'sim', r: 'descrever glândulas salivares' }], { ordem: 0 }),
+    fixo('sal.norm', '{=salnorm}', { ordem: 1 }),
+    glandula('par', 'Parótidas', 'parótidas', 'parótida', 10, true),
+    glandula('sub', 'Submandibulares', 'submandibulares', 'submandibular', 20, true),
+    glandula('sbl', 'Sublinguais', 'sublinguais', 'sublingual', 30, false),
+  ],
+});
+
 export const tireoide: Exame = {
   id: 'tireoide',
   titulo: 'Tireoide',

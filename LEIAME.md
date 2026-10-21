@@ -15,7 +15,7 @@ npm run build      # gera a pasta dist/ (site estático; inclui CSP que bloqueia
 
 ## Exames
 
-Abdome total, Abdome superior, Aparelho urinário, Próstata, Tireoide, Mamas, Transvaginal, Obstétrica 1º trimestre, Obstétrica 2º/3º trimestre, Joelhos, Ombros, Cotovelos e Partes moles.
+Abdome total, Abdome superior, Aparelho urinário, Próstata, Tireoide, Mamas, Transvaginal, Obstétrica 1º trimestre, Obstétrica 2º/3º trimestre, Joelhos, Ombros, Cotovelos, Partes moles e Bolsa testicular.
 Joelhos, Ombros e Cotovelos são unilaterais: o seletor "Lado examinado" (direito/esquerdo) no topo define o título do laudo;
 no joelho o lado não escolhido some da tela.
 Novo exame = novo arquivo em `src/exames/` combinando seções (`com(S.rins, 10)`) e acrescentando seções próprias;
