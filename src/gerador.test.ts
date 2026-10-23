@@ -132,7 +132,7 @@ describe('casos de referência', () => {
   it('próstata acima de 30 cm³: aumento prostático, resíduo desprezível', () => {
     const t = gerarP({ 'pros.med.med.1': 45, 'pros.med.med.2': 50, 'pros.med.med.3': 45, 'resid.on.v.1': 20, 'resid.on.v.2': 40, 'resid.on.v.3': 6 });
     expect(t).toBe([
-      'ULTRASSONOGRAFIA DE PRÓSTATA', '',
+      'ULTRASSONOGRAFIA DA PRÓSTATA', '',
       'Bexiga com boa repleção, paredes finas e regulares, conteúdo anecogênico.',
       'Próstata de contornos regulares, com ecotextura habitual.',
       'Medidas: 4,5 x 5,0 x 4,5 cm. Volume estimado em 53,0 cm³ (normal até 30,0 cm³).',
@@ -142,7 +142,7 @@ describe('casos de referência', () => {
   });
   it('próstata normal: volume na conclusão, resíduo ausente (padrão)', () => {
     expect(gerarP()).toBe([
-      'ULTRASSONOGRAFIA DE PRÓSTATA', '',
+      'ULTRASSONOGRAFIA DA PRÓSTATA', '',
       'Bexiga com boa repleção, paredes finas e regulares, conteúdo anecogênico.',
       'Próstata de contornos regulares, com ecotextura habitual.',
       'Medidas: 2,5 x 2,5 x 2,5 cm. Volume estimado em 8,2 cm³ (normal até 30,0 cm³).',
@@ -508,7 +508,7 @@ describe('próstata: limite de 30 cm³', () => {
     expect(t2).not.toContain('Próstata com volume estimado');
   });
   it('título', () => {
-    expect(gerarP().startsWith('ULTRASSONOGRAFIA DE PRÓSTATA\n')).toBe(true);
+    expect(gerarP().startsWith('ULTRASSONOGRAFIA DA PRÓSTATA\n')).toBe(true);
   });
 });
 
@@ -536,7 +536,7 @@ describe('campos desativados', () => {
     expect(t).not.toContain('Útero em');
     expect(t).not.toContain('Endométrio');
     expect(t).not.toContain('nódulo miometrial');
-    expect(t).toContain('Status pós-histerectomia total.');
+    expect(t).toContain('Sinais de histerectomia.');
     const off = desativados(transvaginal, r);
     expect(off.has('ut.estado')).toBe(true);
     expect(off.has('endo')).toBe(true);
@@ -702,7 +702,7 @@ describe('obstétrica', () => {
 describe('mamas', () => {
   const gm = (o = {}) => gerarLaudo(mamas, { ...respInicial(mamas), ...o }).texto;
   it('normal igual ao print 1', () => {
-    expect(gm()).toContain('ULTRASSONOGRAFIA DE MAMAS\n\nMamas de morfologia normal e contornos regulares.\nPele e tecido adiposo subcutâneo de aspecto ecográfico preservado.\nA composição mamária apresenta ecotextura de fundo homogênea com predomínio fibroglandular.\nNão se observam imagens nodulares sólidas ou císticas.\nAusência de linfonodomegalias axilares.\n\nID:\nExame sem anormalidades detectáveis pelo método.\nClassificação ACR BI-RADS: 1');
+    expect(gm()).toContain('ULTRASSONOGRAFIA DAS MAMAS\n\nMamas de morfologia normal e contornos regulares.\nPele e tecido adiposo subcutâneo de aspecto ecográfico preservado.\nA composição mamária apresenta ecotextura de fundo homogênea com predomínio fibroglandular.\nNão se observam imagens nodulares sólidas ou císticas.\nAusência de linfonodomegalias axilares.\n\nID:\nExame sem anormalidades detectáveis pelo método.\nClassificação ACR BI-RADS: 1');
   });
   it('alterado igual ao print 2', () => {
     const t = gm({
@@ -820,7 +820,7 @@ describe('ajustes recentes', () => {
     expect(G(mamas, { 'ma.cisto1': true, 'ma.n1': true })).not.toContain('Não se observam imagens nodulares');
   });
   it('mamas: cisto retroareolar', () => {
-    expect(G(mamas, { 'ma.cisto1': true, 'ma.cisto1.hora': 'retroareolar', 'ma.cisto1.lado': 'esquerda' })).toContain('localizado na região retroareolar da mama esquerda.');
+    expect(G(mamas, { 'ma.cisto1': true, 'ma.cisto1.hora': 'retroareolar', 'ma.cisto1.lado': 'esquerda' })).toContain('localizado na região retroareolar da mama esquerda (0,4 cm).');
   });
   it('obstétrico 1º tri: bexiga fixa e embrião não caracterizado', () => {
     const t = G(obstetrico1, { 'ob1.nc': true, 'ob1.e1.sg.a': '1,0', 'ob1.e1.sg.b': '1,1', 'ob1.e1.sg.c': '0,9' });

@@ -110,6 +110,7 @@ export type Exame = {
   restante?: string;     // frase final do ID quando há achados (padrão: "Restante do exame sem particularidades.")
   // Título do laudo conforme a opção de uma escolha (ex.: seletor direito/esquerdo). Chave = id da opção.
   tituloVar?: { ctl: string; opcoes: Record<string, string> };
+  tituloDop?: { ctls: string[]; titulo: string }; // título alternativo se algum destes checks estiver marcado
   secoes: Secao[];
 };
 

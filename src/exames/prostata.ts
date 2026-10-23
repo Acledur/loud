@@ -7,7 +7,7 @@ export { secoesProstata };
 export const prostata: Exame = {
   id: 'prostata',
   titulo: 'Próstata',
-  tituloLaudo: 'ULTRASSONOGRAFIA DE PRÓSTATA',
+  tituloLaudo: 'ULTRASSONOGRAFIA DA PRÓSTATA',
   semRestante: true,
   secoes: [bexVol(10, true, true), ...secoesProstata()],
 };

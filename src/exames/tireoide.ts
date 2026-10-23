@@ -88,7 +88,7 @@ const secoes: Secao[] = [
       // "dimensões reduzidas/normais/aumentadas" vem do volume e do sexo (ver CALCULOS no motor)
       fixo('tireoide.t1', 'Tireoide tópica, com dimensões {=dimtireoide} e contornos regulares.',
         { ordem: 10, suprimidoPor: ['tireoide.tireoidectomia', 'tireoide.hemitireoidectomia'] }),
-      fixo('tireoide.eco', `{!${SE_ACHADOS}!A ecotextura é homogênea, não se observando lesões nodulares.}{?${SE_ACHADOS}?O restante do parênquima tireoidiano apresenta ecotextura homogênea.}`,
+      fixo('tireoide.eco', `{!${SE_ACHADOS}!A ecotextura é homogênea, não se observando lesões nodulares.}`,
         { ordem: 11, suprimidoPor: ['tireoide.ecotextura', 'tireoide.tireoidectomia', 'tireoide.hemitireoidectomia'] }),
       chk('tireoide.tireoidectomia', 'tireoidectomia total', 'Tireoide não caracterizada (status pós-cirúrgico). Não há evidências sonográficas de lesões focais no leito tireoidiano.', 'Status pós-tireoidectomia total.', undefined, 5),
       chk('tireoide.hemitireoidectomia', 'hemitireoidectomia', '{lado}', 'Status pós-hemitireoidectomia {lado|c}.', [
@@ -98,6 +98,27 @@ const secoes: Secao[] = [
         ]),
         sel('cont', 'contornos do lobo restante', ops('regulares', 'lobulados')),
       ], 6),
+    ],
+  },
+  {
+    id: 'medidas', titulo: 'Medidas e volume', ordem: 35,
+    controles: [
+      {
+        ...chk('tmed.on', 'Medidas da tireoide',
+          '\nO lobo direito mede {dir} cm.\nO lobo esquerdo mede {esq} cm.\n{ist}\nVolume tireoidiano estimado em {=voltireoide} cm³ (normal de {=refvol} cm³).',
+          undefined,
+          [
+            dims('dir', 'lobo direito (mm)', 3, [40, 12, 12]),
+            dims('esq', 'lobo esquerdo (mm)', 3, [30, 22, 22]),
+            mm('istmo', 'espessura do istmo (mm)', 3),
+            sel('ist', 'istmo', [
+              { r: 'espessura', t: 'O istmo tem espessura de {istmo|cm} cm.' },
+              { r: 'filiforme, não mensurável', t: 'O istmo é filiforme, não mensurável.' },
+            ]),
+          ], 10),
+        marcado: true,
+        desativadoPor: ['tireoide.tireoidectomia'],
+      },
     ],
   },
   {
@@ -161,27 +182,6 @@ const secoes: Secao[] = [
           { r: 'velocidades aumentadas', t: ' As artérias tireoidianas apresentam aumento das velocidades de pico sistólico.' },
         ]),
       ], 10),
-    ],
-  },
-  {
-    id: 'medidas', titulo: 'Medidas e volume', ordem: 35,
-    controles: [
-      {
-        ...chk('tmed.on', 'Medidas da tireoide',
-          '\nO lobo direito mede {dir} cm.\nO lobo esquerdo mede {esq} cm.\n{ist}\nVolume tireoidiano estimado em {=voltireoide} cm³ (normal de {=refvol} cm³).',
-          undefined,
-          [
-            dims('dir', 'lobo direito (mm)', 3, [40, 12, 12]),
-            dims('esq', 'lobo esquerdo (mm)', 3, [30, 22, 22]),
-            mm('istmo', 'espessura do istmo (mm)', 3),
-            sel('ist', 'istmo', [
-              { r: 'espessura', t: 'O istmo tem espessura de {istmo|cm} cm.' },
-              { r: 'filiforme, não mensurável', t: 'O istmo é filiforme, não mensurável.' },
-            ]),
-          ], 10),
-        marcado: true,
-        desativadoPor: ['tireoide.tireoidectomia'],
-      },
     ],
   },
   {

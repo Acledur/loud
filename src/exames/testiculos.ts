@@ -96,7 +96,7 @@ const plexo = (l: Lado): Controle[] => [
     {
       r: 'veias ectasiadas',
       campos: [sel('cal', 'calibre', [nt('não citar calibre máximo'), { r: 'citar calibre máximo', t: ', com calibre máximo de {mx} mm' }]), { id: 'mx', tipo: 'texto', rotulo: 'calibre máximo (mm)', padrao: '4,0' }],
-      corpo: `Observa-se ectasia e tortuosidade das veias do plexo pampiniforme à ${l.a}{cal}.`, concl: `Sinais de varicocele à ${l.a}.`,
+      corpo: `{=tplx:${l.k}}`, concl: `Sinais de varicocele à ${l.a}.`,
     },
     {
       r: 'veias ectasiadas + refluxo ao Doppler',
@@ -120,7 +120,7 @@ const epididimo = (l: Lado): Controle[] => [
     {
       r: 'cisto na cabeça, medindo',
       campos: [dims('med', 'medidas (mm)', 2, [10, 4], true)],
-      corpo: `Na porção cefálica do epidídimo ${l.n} observa-se um cisto anecogênico de contornos regulares e paredes finas medindo {med} cm.`, concl: `Cisto de epidídimo à ${l.a}.`,
+      corpo: `{=tepi:${l.k}}`, concl: `Cisto de epidídimo à ${l.a}.`,
     },
   ], { ordem: ord(l, 10), rotulo: `Epidídimo ${l.n}` }),
 ];
@@ -138,7 +138,8 @@ const secao = (idS: string, titulo: string, ordem: number, gen: (l: Lado) => Con
 export const testiculos: Exame = {
   id: 'testiculos',
   titulo: 'Bolsa testicular',
-  tituloLaudo: 'ULTRASSONOGRAFIA DE BOLSA TESTICULAR',
+  tituloLaudo: 'ULTRASSONOGRAFIA DA BOLSA TESTICULAR',
+  tituloDop: { ctls: [id(D, 'flux'), id(E, 'flux')], titulo: 'ULTRASSONOGRAFIA DA BOLSA TESTICULAR COM DOPPLER' },
   secoes: [
     secao('te.liq', 'Líquido (hemibolsas)', 10, liquido, { umaPorLinha: true, bilateral: bil('Hidrocele') },
       [fixo('te.liq.n', 'Líquido em quantidade fisiológica na bolsa testicular.', { ordem: 0, suprimidoPor: [id(D, 'liq'), id(E, 'liq')] })]),

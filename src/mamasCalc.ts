@@ -45,6 +45,18 @@ function nodulos(r: Resp): Nod[] {
   return out;
 }
 
+type Cis = { lado: string; cont: string; loc: string; cm: string };
+function cistos(r: Resp): Cis[] {
+  const out: Cis[] = [];
+  for (let i = 1; i <= 4; i++) {
+    const p = `ma.cisto${i}`;
+    if (r[p] !== true) continue;
+    out.push({ lado: String(r[`${p}.lado`] ?? 'direita'), cont: String(r[`${p}.cont`] ?? 'anecogênico'), loc: local(r, p, true), cm: cm(r[`${p}.mm`]) });
+  }
+  return out;
+}
+const juntar = (l: string[]) => (l.length > 1 ? `${l.slice(0, -1).join(', ')} e ${l[l.length - 1]}` : l[0]);
+
 const NUM = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis'];
 
 export const calculosMama: Record<string, (r: Resp, arg?: string) => string> = {
@@ -64,6 +76,28 @@ export const calculosMama: Record<string, (r: Resp, arg?: string) => string> = {
       linhas.push(`Mama ${lado}:`, ...l.map((x) => `- ${x.loc}, nódulo ${x.desc}, medindo ${x.med} cm.${x.extra}`));
     }
     return linhas.join('\n');
+  },
+  mcist: (r) => {
+    const c = cistos(r);
+    return ['anecogênico', 'espesso'].map((t) => {
+      const l = c.filter((x) => x.cont === t);
+      if (!l.length) return '';
+      const locs = [...new Set(l.map((x) => x.loc))];
+      const grupos = locs.map((loc) => `${loc} (${juntar(l.filter((x) => x.loc === loc).map((x) => `${x.cm} cm`))})`);
+      const un = l.length === 1;
+      return `Presença de ${un ? 'cisto' : `${NUM[l.length]} cistos`} de contornos regulares e conteúdo ${t} ${un ? 'localizado' : 'localizados'} ${juntar(grupos)}.`;
+    }).filter(Boolean).join('\n');
+  },
+  mcistconcl: (r) => {
+    const c = cistos(r);
+    return ['anecogênico', 'espesso'].map((t) => {
+      const l = c.filter((x) => x.cont === t);
+      if (!l.length) return '';
+      const lados = [...new Set(l.map((x) => x.lado))];
+      const base = t === 'espesso' ? ['Cisto de conteúdo espesso', 'Cistos de conteúdo espesso'] : ['Cisto simples', 'Cistos simples'];
+      if (lados.length > 1) return `${base[1]} bilaterais.`;
+      return l.length === 1 ? `${base[0]} na mama ${lados[0]}.` : `${base[1]} na mama ${lados[0]}.`;
+    }).filter(Boolean).join('\n');
   },
   mnodconcl: (r) => {
     const n = nodulos(r);

@@ -199,6 +199,28 @@ const CALCULOS: Record<string, (r: Resp, arg?: string) => string> = {
   residuo: (r) => residuo(r),
   dimutero: (r) => { const v = volDe(r, 'ut.estado.med'); return v === null ? '[PREENCHER]' : v < LIMITE_UTERO_CM3 ? 'normais' : 'aumentadas'; },
   concutero: (r) => { const v = volDe(r, 'ut.estado.med'); return v !== null && v >= LIMITE_UTERO_CM3 ? 'Útero com volume aumentado.' : ''; },
+  tplx: (r, k = 'd') => {
+    const est = (x: string) => r[`te.${x}.plx`];
+    const cal = (x: string) => (r[`te.${x}.plx.cal`] === 'citar calibre máximo' ? String(r[`te.${x}.plx.mx`] ?? '') : '');
+    const lado = k === 'd' ? 'direita' : 'esquerda';
+    if (est('d') !== 'veias ectasiadas' || est('e') !== 'veias ectasiadas') return `Observa-se ectasia e tortuosidade das veias do plexo pampiniforme à ${lado}${cal(k) ? `, com calibre máximo de ${cal(k)} mm` : ''}.`;
+    if (k === 'e') return '';
+    const c = [cal('d') && `${cal('d')} mm à direita`, cal('e') && `${cal('e')} mm à esquerda`].filter(Boolean);
+    return `Observam-se ectasias e tortuosidades das veias dos plexos pampiniformes bilateralmente${c.length ? `, com calibre máximo de ${c.join(' e ')}` : ''}.`;
+  },
+  tepi: (r, k = 'd') => {
+    const cisto = (x: string) => r[`te.${x}.epi`] === 'cisto na cabeça, medindo';
+    const med = (x: string) => [1, 2].map((i) => fmtCm(num(r[`te.${x}.epi.med.${i}`]))).join(' x ');
+    if (!(cisto('d') && cisto('e'))) return `Na porção cefálica do epidídimo ${k === 'd' ? 'direito' : 'esquerdo'} observa-se um cisto anecogênico de contornos regulares e paredes finas medindo ${med(k)} cm.`;
+    if (k === 'e') return '';
+    return `Nas porções cefálicas dos epidídimos observam-se cistos anecogênicos de contornos regulares e paredes finas medindo ${med('d')} cm à direita e ${med('e')} cm à esquerda.`;
+  },
+  ovnc: (r, a = '') => {
+    const nc = (x: string) => r[`${x}.estado`] === 'não caracterizado';
+    const lado = a === 'ovdireito' ? 'direito' : 'esquerdo';
+    if (nc('ovdireito') && nc('ovesquerdo')) return a === 'ovdireito' ? 'Ovários não caracterizados. Regiões anexiais sem evidências de massas ou coleções.' : '';
+    return `Ovário ${lado} não caracterizado. Região anexial ${lado === 'direito' ? 'direita' : 'esquerda'} sem evidências de massas ou coleções.`;
+  },
   ovaumentado: (r, a = '') => { const v = volDe(r, `${a}.estado.med`); return v !== null && v > LIMITE_OVARIO_CM3 ? ' aumentado' : ''; },
   ovconcl: (r, a = '') => { const v = volDe(r, `${a}.estado.med`); return v !== null && v > LIMITE_OVARIO_CM3 ? `Ovário ${a.replace('ov', '')} com volume aumentado.` : ''; },
   voltireoide: (r) => { const v = volTireoide(r); return v === null ? '[PREENCHER]' : um(v); },
@@ -409,7 +431,7 @@ export function gerarLaudo(ex: Exame, r: Resp, opts: { cabecalho?: string; rodap
   const linhas: Linha[] = [];
   cab.forEach((t) => linhas.push({ t, a: 'left', b: true }));            // cabeçalho: esquerda, negrito
   if (cab.length) linhas.push(vazia, vazia);
-  const titulo = ex.tituloVar ? (ex.tituloVar.opcoes[String(r[ex.tituloVar.ctl])] ?? ex.tituloLaudo) : ex.tituloLaudo;
+  const titulo = ex.tituloDop && ex.tituloDop.ctls.some((c) => r[c] === true) ? ex.tituloDop.titulo : ex.tituloVar ? (ex.tituloVar.opcoes[String(r[ex.tituloVar.ctl])] ?? ex.tituloLaudo) : ex.tituloLaudo;
   linhas.push({ t: titulo, a: 'center', b: true }, vazia);        // título: centralizado, negrito
   // parágrafos que começam com "Obs.:" saem logo acima do ID, com linha em branco antes e depois
   paragrafos.filter((t) => !t.startsWith('Obs.:')).forEach((t) => linhas.push({ t: t === '¶' ? '' : t, a: 'justify' })); // '¶' = linha em branco

@@ -197,7 +197,7 @@ const secoes: Secao[] = [
         { r: 'tamanho normal', corpo: 'Baço com dimensões normais, contornos regulares e ecotextura homogênea.' },
         { r: 'aumentado', campos: [sel('eco', 'ecotextura', ops('ecotextura homogênea', 'ecotextura heterogênea'))],
           corpo: 'Baço com dimensões aumentadas, contornos regulares e {eco}.', concl: 'Esplenomegalia.' },
-        { r: 'ausente', corpo: 'Baço não caracterizado (esplenectomia).', concl: 'Ausência do baço.' },
+        { r: 'ausente', corpo: 'Baço não caracterizado (esplenectomia).', concl: 'Sinais de esplenectomia.' },
       ], { ordem: 10 }),
       chk('baco.med', 'citar dimensões', 'Mede {med} cm em seu maior e menor eixo{idx}.', undefined,
         [dims('med', 'maior x menor eixo', 2, 80),

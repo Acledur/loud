@@ -80,18 +80,15 @@ const cirurgias: Secao = {
 };
 
 // ---------- Cistos ----------
-const CONT: Opc[] = [
-  { r: 'anecogênico', t: 'anecogênico, de contornos regulares e paredes finas', c: 'Cisto simples' },
-  { r: 'espesso', t: 'espesso, de contornos regulares e paredes finas', c: 'Cisto de conteúdo espesso' },
-];
+const CONT: Opc[] = [{ r: 'anecogênico' }, { r: 'espesso' }];
 const cisto = (n: number): Check =>
-  chk(`ma.cisto${n}`, `cisto ${n}`, `Cisto de conteúdo {cont}, medindo {mm|cm} cm, localizado {=mloc:ma.cisto${n}}.`, '{cont|c} {lado|c}.',
-    [sel('cont', 'conteúdo', CONT), mm('mm', 'medindo (mm)', 4), ...onde()], n * 10);
+  chk(`ma.cisto${n}`, `cisto de conteúdo`, '', undefined, [sel('cont', '', CONT), mm('mm', 'medindo (mm)', 4), ...onde()], n * 10);
 const cistos: Secao = {
   id: 'ma.cistos', titulo: 'Cistos', ordem: 20,
   bilateral: [{ base: 'Cisto simples', resultado: 'Cistos simples bilaterais.' }, { base: 'Cisto de conteúdo espesso', resultado: 'Cistos de conteúdo espesso bilaterais.' }],
   controles: [
     ...[1, 2, 3, 4].map(cisto),
+    fixo('ma.cistxt', '{=mcist}', { ordem: 5, concl: '{=mcistconcl}' }),
     chk('ma.micro', 'agrupamento de microcistos', 'Agrupamento de microcistos anecogênicos, medindo até {mm|cm} cm, localizado {=mloc:ma.micro}.', 'Microcistos agrupados {lado|c}.',
       [mm('mm', 'medindo (mm)', 4), ...onde()], 50),
     chk('ma.multi', 'múltiplos cistos simples',
@@ -194,7 +191,7 @@ const obs: Secao = {
 export const mamas: Exame = {
   id: 'mamas',
   titulo: 'Mamas',
-  tituloLaudo: 'ULTRASSONOGRAFIA DE MAMAS',
+  tituloLaudo: 'ULTRASSONOGRAFIA DAS MAMAS',
   restante: 'Restante do exame sem anormalidades detectáveis pelo método.',
   fim: ['Classificação ACR BI-RADS: {=val:ma.birads}'],
   secoes: [motivo, geral, implantes, cirurgias, cistos, ectasias, gineco, nodulos, axilas, obs],
