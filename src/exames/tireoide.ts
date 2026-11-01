@@ -62,7 +62,7 @@ const nodulo = (n: number): Check => ({
   tipo: 'check', id: `nodulos.n${n}`, rotulo: `Descrever Nódulo ${n}`, ordem: n,
   item: `N${n}: {local}, nódulo {composicao} {eco}, de contornos {contornos}{aspecto}{calc}, medindo {med} cm.{vasc}{tirads}{paaf}`,
   campos: [
-    dims('med', 'medidas (mm)', 3, 10),
+    dims('med', 'medidas (cm)', 3, 10),
     sel('composicao', 'composição', COMPOSICAO),
     sel('local', 'localização', posicoes('nodulo')),
     sel('eco', 'ecogenicidade', ECO),
@@ -108,9 +108,9 @@ const secoes: Secao[] = [
           '\nO lobo direito mede {dir} cm.\nO lobo esquerdo mede {esq} cm.\n{ist}\nVolume tireoidiano estimado em {=voltireoide} cm³ (normal de {=refvol} cm³).',
           undefined,
           [
-            dims('dir', 'lobo direito (mm)', 3, [40, 12, 12]),
-            dims('esq', 'lobo esquerdo (mm)', 3, [30, 22, 22]),
-            mm('istmo', 'espessura do istmo (mm)', 3),
+            dims('dir', 'lobo direito (cm)', 3, [40, 12, 12]),
+            dims('esq', 'lobo esquerdo (cm)', 3, [30, 22, 22]),
+            mm('istmo', 'espessura do istmo (cm)', 3),
             sel('ist', 'istmo', [
               { r: 'espessura', t: 'O istmo tem espessura de {istmo|cm} cm.' },
               { r: 'filiforme, não mensurável', t: 'O istmo é filiforme, não mensurável.' },
@@ -191,7 +191,7 @@ const secoes: Secao[] = [
       chk('linf.isolado', 'Descrever Linfonodomegalia isolada',
         'No {sitio} à {lado} nota-se um linfonodo {eco} de contornos {contornos}, medindo {med} cm.{vasc}{calc}{ir}',
         'Linfonodomegalia cervical à {lado}.',
-        [dims('med', 'medidas (mm)', 3, 10), sel('sitio', 'sítio nodal', SITIOS), sel('lado', 'lado', LADO_LINF), sel('eco', 'ecogenicidade', ECO_LINF),
+        [dims('med', 'medidas (cm)', 3, 10), sel('sitio', 'sítio nodal', SITIOS), sel('lado', 'lado', LADO_LINF), sel('eco', 'ecogenicidade', ECO_LINF),
          sel('contornos', 'contornos', CONTORNOS), sel('vasc', 'vascularização', VASC), sel('calc', 'calcificações', CALC_LINF), sel('ir', 'índice de resistividade', IR)], 10),
       chk('linf.multiplos', 'Descrever Múltiplos Linfonodos',
         'Linfonodos aumentados, medindo até {dirA} x {dirB} mm à direita, no {sitioDir}, e até {esqA} x {esqB} mm à esquerda, no {sitioEsq}. Aspecto {eco}, com contornos {contornos}.{vasc}{calc}{ir}',
@@ -217,7 +217,7 @@ const glandula = (k: string, rotulo: string, pl: string, sg: string, ordem: numb
   });
   const opcoes: Opc[] = [{ id: 'n', r: 'normais' }, alt('aum', 'heterogeneidade com aumento de volume', 'aumentadas', 'aumento volumétrico'), alt('red', 'heterogeneidade com redução de volume', 'reduzidas', 'redução volumétrica')];
   if (sialo) opcoes.push({
-    id: 'sia', r: 'sialolitíase', campos: [sel('lsi', 'lado', LADO), mm('duc', 'calibre máximo do ducto (mm)', 3), mm('calc', 'cálculo (mm)', 5)],
+    id: 'sia', r: 'sialolitíase', campos: [sel('lsi', 'lado', LADO), mm('duc', 'calibre máximo do ducto (cm)', 3), mm('calc', 'cálculo (cm)', 5)],
     corpo: `Glândula ${sg} {lsi} com ecotextura difusamente heterogênea e volume aumentado, notando-se ectasia do ducto principal, que apresenta calibre máximo de {duc|cm} cm, notando-se cálculo de {calc|cm} cm.`,
     concl: `Ectasia ductal na glândula ${sg} {lsi}, com cálculo demonstrável (sialolitíase).`,
   });

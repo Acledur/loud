@@ -8,7 +8,7 @@ export function linhasParaHtml(ls: Linha[]): string {
     .map((l) => {
       const t = escHtml(l.t).replace(/\[(?:PREENCHER|REVISAR)[^\]]*\]/g, '<mark>$&</mark>');
       const tab = l.t.includes('\t') ? ';white-space:pre-wrap;tab-size:3.5cm' : '';
-      return `<p align="${l.a}" style="text-align:${l.a};margin:0${tab}">${l.t ? (l.b ? `<b>${t}</b>` : t) : '<br>'}</p>`;
+      return `<p align="${l.a}" style="text-align:${l.a};margin:0${tab}${l.s ? ';font-size:0.88em' : ''}">${l.t ? (l.b ? `<b>${t}</b>` : t) : '<br>'}</p>`;
     })
     .join('');
 }
@@ -79,7 +79,8 @@ export function htmlParaRtf(el: HTMLElement, imgs: { cab?: string; rod?: string 
         if (n.nodeType === 1) { if ((n as Element).tagName === 'BR') out += '\\line '; continue; }
         const cs = getComputedStyle((n as Text).parentElement!);
         const negrito = Number(cs.fontWeight) >= 600 || cs.fontWeight === 'bold';
-        out += `{${negrito ? '\\b ' : ''}${cs.fontStyle === 'italic' ? '\\i ' : ''}${rtfTxt(n.textContent ?? '')}}`;
+        const fsz = Math.round((parseFloat(cs.fontSize) / (parseFloat(getComputedStyle(el).fontSize) || parseFloat(cs.fontSize))) * pt * 2);
+        out += `{${fsz !== pt * 2 ? `\\fs${fsz} ` : ''}${negrito ? '\\b ' : ''}${cs.fontStyle === 'italic' ? '\\i ' : ''}${rtfTxt(n.textContent ?? '')}}`;
       }
     }
     return `\\pard${al[alinhamento(p)]}\\sa0${p.textContent?.includes('\t') ? '\\tx1985\\tx3969' : ''} ${out}\\par`;

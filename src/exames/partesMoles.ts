@@ -19,7 +19,7 @@ const REGIAO_HERNIA: Opc[] = [
   { r: 'hipogástrica', c: 'Hérnia da linha média na região hipogástrica.' },
 ];
 const ECO: Opc[] = [
-  { r: 'isoecogênico (lipoma)', t: 'isoecogênica ao tecido adiposo', c: 'Formação nodular em partes superficiais, sugestivo de lipoma ou suas variantes histológicas.' },
+  { r: 'isoecogênico (lipoma)', t: 'isoecogênica ao tecido adiposo', c: 'Formação nodular em partes superficiais, sugestiva de lipoma ou suas variantes histológicas.' },
   { r: 'hipoecogênico', t: 'hipoecogênica em relação ao tecido adiposo', c: 'Formação nodular em partes superficiais.' },
   { r: 'hiperecogênico', t: 'hiperecogênica em relação ao tecido adiposo', c: 'Formação nodular em partes superficiais.' },
   { r: 'calcificado', t: 'calcificada', c: 'Formação nodular calcificada em partes superficiais.' },
@@ -47,7 +47,7 @@ const secoes: Secao[] = [
       chk('pm.hum', 'saco herniário na cicatriz umbilical medindo',
         'Na cicatriz umbilical observa-se um saco herniário contendo {cont}, com variação de volume às manobras compressivas e respiratórias, medindo {med} cm, com colo de {colo|cm} cm.',
         'Hérnia umbilical.',
-        [dims('med', 'medidas (mm)', 2, 10), mm('colo', 'colo (mm)', 10), sel('cont', 'conteúdo', CONTEUDO)]),
+        [dims('med', 'medidas (cm)', 2, 10), mm('colo', 'colo (cm)', 10), sel('cont', 'conteúdo', CONTEUDO)]),
     ],
   },
   {
@@ -56,7 +56,7 @@ const secoes: Secao[] = [
       chk('pm.hep', 'saco herniário mediano medindo',
         'Na região {reg}, em topografia mediana, observa-se um saco herniário contendo {cont}, medindo {med} cm, com colo de {colo|cm} cm.',
         '{reg|c}',
-        [dims('med', 'medidas (mm)', 2, 20), mm('colo', 'colo (mm)', 10), sel('reg', 'região', REGIAO_HERNIA), sel('cont', 'conteúdo', CONTEUDO)]),
+        [dims('med', 'medidas (cm)', 2, 20), mm('colo', 'colo (cm)', 10), sel('reg', 'região', REGIAO_HERNIA), sel('cont', 'conteúdo', CONTEUDO)]),
     ],
   },
   {
@@ -70,7 +70,7 @@ const secoes: Secao[] = [
             sel('lado', 'lado', ops('direita', 'esquerda')),
             sel('cont', 'conteúdo da hérnia', ops('alças intestinais', 'tecido adiposo')),
             sel('mdd', 'medidas', [{ r: 'citar medidas', t: ', medindo {med} cm, com colo de {colo|cm} cm' }, { r: 'não citar medidas', t: '' }]),
-            dims('med', 'saco herniário mede (mm)', 2, 10), mm('colo', 'colo mede (mm)', 10),
+            dims('med', 'saco herniário mede (cm)', 2, 10), mm('colo', 'colo mede (cm)', 10),
           ],
           corpo: 'Na região inguinal {lado} observa-se saco herniário contendo {cont}, com variação de volume às manobras compressivas e respiratórias{mdd}.',
           concl: 'Hérnia inguinal à {lado}.',
@@ -84,7 +84,7 @@ const secoes: Secao[] = [
       chk('pm.dia', 'presente, ao nível do',
         'Nota-se afastamento patológico dos ventres do músculo reto abdominal ao nível do {nivel}{dist}.',
         'Diástase do músculo reto abdominal.',
-        [sel('nivel', 'nível', NIVEL), sel('dist', 'distância entre as bordas mediais', DIST), mm('mm', 'distância máxima (mm)', 3)]),
+        [sel('nivel', 'nível', NIVEL), sel('dist', 'distância entre as bordas mediais', DIST), mm('mm', 'distância máxima (cm)', 3)]),
     ],
   },
   {
@@ -101,16 +101,16 @@ const secoes: Secao[] = [
       chk('pm.cisto', 'formação nodular hipoecogênica (cisto epidermóide) medindo',
         'Formação nodular hipoecogênica e heterogênea, sem vascularização significativa ao estudo complementar com Doppler colorido, que mede {med} cm, na região {reg}. A hipótese de cisto epidermóide deve ser considerada.',
         'Achados sugestivos de cisto epidermóide.',
-        [dims('med', 'medidas (mm)', 3, 10), texto('reg', 'região')]),
+        [dims('med', 'medidas (cm)', 3, 10), texto('reg', 'região')]),
     ],
   },
   {
     id: 'pmlip', titulo: 'Nódulo subcutâneo / lipoma', ordem: 70,
     controles: [
       chk('pm.lipoma', 'nódulo na gordura subcutânea',
-        'Na alteração palpável da região {reg}, caracteriza-se nos planos do subcutâneo, formação nodular sólida, de contornos {cont}, {eco}, medindo {med} cm (L x AP x T), distando {dist|cm} cm da pele.',
+        'Na alteração palpável da região {reg}, caracteriza-se nos planos do subcutâneo, formação nodular sólida, de contornos {cont}, {eco}, medindo {med} cm.',
         '{eco|c}',
-        [texto('reg', 'região'), sel('cont', 'contornos', CONTORNOS), sel('eco', 'ecogenicidade', ECO), dims('med', 'medidas (mm)', 3, 10), mm('dist', 'distância da pele (mm)', 5)]),
+        [texto('reg', 'região'), sel('cont', 'contornos', CONTORNOS), sel('eco', 'ecogenicidade', ECO), dims('med', 'medidas (cm)', 3, 10)]),
     ],
   },
   {
@@ -126,7 +126,7 @@ const secoes: Secao[] = [
         },
         {
           id: 'cistica', r: 'formação cística heterogênea, septada (coleção)',
-          campos: [dims('med', 'medidas (mm)', 3, 10), texto('loc', 'localização', 'na linha paramediana à esquerda, na altura da cicatriz umbilical, anterior ao músculo reto abdominal ipsilateral'), texto('regc', 'região (ID)', 'paramediana esquerda')],
+          campos: [dims('med', 'medidas (cm)', 3, 10), texto('loc', 'localização', 'na linha paramediana à esquerda, na altura da cicatriz umbilical, anterior ao músculo reto abdominal ipsilateral'), texto('regc', 'região (ID)', 'paramediana esquerda')],
           corpo: 'Caracteriza-se aumento da espessura e ecogenicidade do tecido subcutâneo, com aumento do fluxo vascular ao estudo complementar Doppler, associado a formação cística heterogênea, com septos de permeio, reforço acústico posterior, medindo {med} cm e volume estimado de {med|vol} cm³, localizada {loc}, compatível com coleção, que dentre as possibilidades pode corresponder a seroma.',
           concl: 'Achados ultrassonográficos sugestivo de seroma na região {regc}.',
         },
@@ -139,7 +139,7 @@ const secoes: Secao[] = [
       chk('pm.abscesso', 'formação cística de conteúdo espesso (abscesso) medindo',
         'Subcutâneo apresentando formação cística, de contornos irregulares, com traves e moderados debris de permeio, sugerindo conteúdo cístico-espesso, medindo aproximadamente {med} cm, e volume estimado em {med|vol} cm³. Caracteriza-se ainda, aumento da espessura da pele e borramento dos planos adiposos adjacentes à lesão descrita, sugerindo processo inflamatório/infeccioso.',
         'Formação cístico-espessa na {reg}, sugestivo de abscesso.',
-        [dims('med', 'medidas (mm)', 3, 10), texto('reg', 'região')]),
+        [dims('med', 'medidas (cm)', 3, 10), texto('reg', 'região')]),
     ],
   },
 ];

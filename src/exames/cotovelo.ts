@@ -63,17 +63,17 @@ const secaoTendao = (t: (typeof T)[number], i: number): Secao => {
     { id: 'tend', r: `tendinopatia sem rotura${epi}`, corpo: `{=cottend:${k}}`, concl: tendConcl,
       ...(k === 'bic' ? { campos: [
         sel('calc', 'calcificações', [{ r: 'não citar calcificações' }, { r: 'com pequenas calcificações junto à inserção' }, { r: 'com calcificação medindo' }]),
-        mm('cal', 'calcificação medindo (mm)', 10)] } : {}) },
-    { id: 'parcial', r: 'rotura parcial medindo', campos: [dims('med', 'medidas (mm)', 2, 10)],
+        mm('cal', 'calcificação medindo (cm)', 10)] } : {}) },
+    { id: 'parcial', r: 'rotura parcial medindo', campos: [dims('med', 'medidas (cm)', 2, 10)],
       corpo: `${alt} hipoecogênico, heterogêneo, observando-se sinais de rotura parcial medindo {med} cm.`, concl: `Tendinopatia ${nome}, com sinais de rotura parcial.` },
   ];
   if (k === 'bic') {
     opcoes.push({ id: 'completa', r: 'rotura completa',
-      campos: [mm('int', 'intervalo (mm)', 10), sel('retr', 'retração', [{ r: 'sem retração do coto', t: '' }, { r: 'com retração do coto', t: ', com retração do coto' }])],
+      campos: [mm('int', 'intervalo (cm)', 10), sel('retr', 'retração', [{ r: 'sem retração do coto', t: '' }, { r: 'com retração do coto', t: ', com retração do coto' }])],
       corpo: 'Tendão do bíceps braquial com sinais de rotura completa, com {int|cm} cm de intervalo{retr}.', concl: 'Rotura completa do tendão do bíceps braquial.' });
   }
   const extra = k === 'tri'
-    ? { ...chk(`${p}.ent`, 'entesófito medindo', `${t.normal} ${NORMAL}, notando-se entesófito medindo {mm|cm} cm junto à inserção.`, 'Entesófito junto à inserção do tendão do tríceps braquial.', [mm('mm', 'entesófito medindo (mm)', 10)], 11), desativadoPor: [`${p}.tipo`] }
+    ? { ...chk(`${p}.ent`, 'entesófito medindo', `${t.normal} ${NORMAL}, notando-se entesófito medindo {mm|cm} cm junto à inserção.`, 'Entesófito junto à inserção do tendão do tríceps braquial.', [mm('mm', 'entesófito medindo (cm)', 10)], 11), desativadoPor: [`${p}.tipo`] }
     : { ...chk(`${p}.calc`, 'pequenas calcificações junto à inserção', `${t.normal} ${NORMAL}, notando-se pequenas calcificações junto à inserção.`, `Pequenas calcificações junto à inserção ${nome}.`, undefined, 11), desativadoPor: [`${p}.tipo`] };
   return {
     id: p, titulo, ordem: 10 * (i + 1),

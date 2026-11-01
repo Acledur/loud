@@ -336,7 +336,7 @@ const secoes: Secao[] = [
         { r: 'repleção insuficiente', corpo: 'Bexiga com repleção insuficiente para análise.' },
       ], { ordem: 10 }),
       chk('bex.divert', 'divertículo', 'Presença de formação diverticular na parede {local} da bexiga, medindo cerca de {med} cm.', 'Formação diverticular vesical.',
-        [dims('med', 'medidas (mm)', 2, 10), sel('local', 'localização (parede)', ops('lateral direita', 'lateral esquerda', 'posterior', 'posterior à direita', 'posterior à esquerda', 'anterior', 'superior', 'inferior'))], 15),
+        [dims('med', 'medidas (cm)', 2, 10), sel('local', 'localização (parede)', ops('lateral direita', 'lateral esquerda', 'posterior', 'posterior à direita', 'posterior à esquerda', 'anterior', 'superior', 'inferior'))], 15),
       chk('bex.foley', 'presença de sonda de Foley', 'Presença de sonda com balão visível no lúmen vesical.', undefined, undefined, 20),
       chk('bex.nao', 'não citar bexiga', ''),
     ],
@@ -365,7 +365,7 @@ export const com = (x: Secao, ordem: number): Secao => ({ ...x, ordem });
 const controlesVolume = (comConcl: boolean, marcado: boolean, residFimDe = 'fim'): Controle[] => [
   chk('volpre.on', 'citar volume pré-miccional', '\nVolume vesical pré-miccional estimado em {v|ml} ml.', undefined, [dims('v', 'medidas', 3, 80)], 100),
   { ...chk('resid.on', 'citar resíduo pós-miccional', '\nResíduo vesical pós-miccional {=residuo}.',
-      comConcl ? 'Resíduo vesical pós-miccional {=residuo}.' : undefined, [dims('v', 'medidas (mm)', 3, 0)], 110), marcado, fimDe: residFimDe },
+      comConcl ? 'Resíduo vesical pós-miccional {=residuo}.' : undefined, [dims('v', 'medidas (cm)', 3, 0)], 110), marcado, fimDe: residFimDe },
   // nos exames sem conclusão fixa do resíduo, ele entra no ID só quando passa de 40 ml
   ...(comConcl ? [] : [fixo('resid.alto', '', { ordem: 190, concl: 'Resíduo vesical pós-miccional {=residuo}.', vol: { ctl: 'resid.on', campo: 'v', op: '>' as const, limite: 40 } })]),
 ];

@@ -4,12 +4,12 @@
 // A conclusão (ID) cita só a idade gestacional (+ oligoâmnio/polidrâmnio quando o ILA pede).
 // ============================================================================
 import type { Campo, Exame, Opc, Secao } from '../tipos';
-import { chk, esc, fixo, ops, sel } from './abdomeTotal';
+import { chk, dims, esc, fixo, ops, sel } from './abdomeTotal';
 
 const texto = (id: string, rotulo: string): Campo => ({ id, tipo: 'texto', rotulo, padrao: '' });
 const NB = '\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0'; // espaços fixos entre DBP e CC
 const OBS = [
-  'OBS: EM CASO DE RETORNO, FAZER A GENTILEZA DE TRAZER OS EXAMES ANTERIORES.',
+  'OBS: EM CASO DE RETORNO, FAZER A GENTILEZA DE TRAZER OS EXAMES ANTERIORES.', // só no 1º trimestre
   'Este exame não tem a intenção de fazer avaliação morfológica detalhada, a posição fetal, líquido amniótico, espessura do tecido celular subcutâneo e a ecotextura tecidual materna podem restringir a visualização de alterações feto-placentárias.',
 ];
 const um = (id: string, opcoes: Opc[], extra = {}) => esc(id, 'radio', opcoes, extra); // escolha em radio
@@ -68,6 +68,14 @@ export const obstetrico1: Exame = {
     },
     embriao(1),
     embriao(2),
+    {
+      id: 'ob1.hem', titulo: 'Hematoma retrocoriônico', ordem: 50, controles: [
+        chk('ob1.hematoma', 'hematoma retrocoriônico',
+          'Formação laminar, hipoecogênica, de contornos irregulares, adjacente à parede {parede} do saco gestacional, medindo {med} cm, sugerindo hematoma.',
+          'Achados ultrassonográficos sugestivos de hematoma retrocoriônico.',
+          [sel('parede', 'parede', ops('fúndica', 'inferior', 'lateral', 'posterior', 'anterior')), dims('med', 'medidas (cm)', 2, [20, 10])], 10),
+      ],
+    },
   ],
 };
 
@@ -82,7 +90,7 @@ export const obstetrico2: Exame = {
   tituloLaudo: 'ULTRASSONOGRAFIA OBSTÉTRICA',
   tituloVar: { ctl: 'ob2.dop', opcoes: { true: 'ULTRASSONOGRAFIA OBSTÉTRICA COM DOPPLER' } },
   semRestante: true,
-  obs: OBS,
+  obs: OBS.slice(1),
   secoes: [
     {
       id: 'ob2.ig', titulo: 'Idade gestacional (vai para a conclusão)', ordem: 5, controles: [

@@ -53,7 +53,7 @@ const testiculo = (l: Lado): Controle[] => {
           sel('eco', 'ecogenicidade', ops('hipoecogênico', 'hiperecogênico', 'isoecogênico', 'heterogêneo', 'anecogênico')),
           sel('cont', 'contornos', ops('contornos regulares', 'contornos irregulares', 'contornos lobulados')),
           sel('loc', 'localização', ops('no terço superior', 'no terço médio', 'no terço inferior')),
-          dims('med', 'o nódulo mede (mm)', 3, 10),
+          dims('med', 'o nódulo mede (cm)', 3, 10),
           sel('vasc', 'vascularização', [nt('não citar vascularização'),
             { r: 'periférica e central', t: ' Nota-se vascularização periférica e central ao Doppler.' },
             { r: 'apenas periférica', t: ' Nota-se vascularização apenas periférica ao Doppler.' },
@@ -83,7 +83,7 @@ const fluxo = (l: Lado): Controle[] => [
 const medidas = (l: Lado): Controle[] => [
   {
     ...chk(id(l, 'med'), `testículo ${l.n}: medidas e volume`, `O testículo ${l.n} apresenta dimensões {dm}, medindo: {med} cm. Volume = {med|vol} cm³.`, undefined, [
-      dims('med', 'mede (mm)', 3, [40, 25, 20]),
+      dims('med', 'mede (cm)', 3, [40, 25, 20]),
       sel('dm', 'dimensões', ops('normais', 'aumentadas', 'reduzidas')),
     ], ord(l, 10)),
     marcado: true, desativadoPor: [id(l, 'orq')],
@@ -119,7 +119,7 @@ const epididimo = (l: Lado): Controle[] => [
     },
     {
       r: 'cisto na cabeça, medindo',
-      campos: [dims('med', 'medidas (mm)', 2, [10, 4], true)],
+      campos: [dims('med', 'medidas (cm)', 2, [10, 4], true)],
       corpo: `{=tepi:${l.k}}`, concl: `Cisto de epidídimo à ${l.a}.`,
     },
   ], { ordem: ord(l, 10), rotulo: `Epidídimo ${l.n}` }),

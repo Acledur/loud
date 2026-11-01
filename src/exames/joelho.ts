@@ -25,9 +25,9 @@ function criarSecoes(lado: typeof lados[number]): Secao[] {
     { id: `${p}.derrame`, titulo: 'Derrame articular', ordem: base + 0, controles: [
       esc(`${p}.derrame.tipo`, [
         { r: 'ausente', corpo: `Ausência de derrame articular.` },
-        { r: 'presente', campos: [sel('grau', 'quantidade', ops('pequeno', 'moderado', 'volumoso')),
+        { r: 'presente', campos: [sel('grau', 'quantidade', [{ r: 'leve', t: 'Leve', c: 'leve' }, { r: 'moderado', t: 'Moderado', c: 'moderado' }, { r: 'acentuado', t: 'Acentuado', c: 'acentuado' }]),
           sel('esp', 'espessamento sinovial', [{ r: 'não', t: '', c: '' }, { r: 'sim', t: ', associado a espessamento sinovial', c: ', associado a espessamento sinovial' }])],
-        corpo: `Derrame articular, em quantidade {grau}{esp}.`, concl: `Derrame articular{esp|c}.` },
+        corpo: `{grau} derrame articular na topografia supra-patelar com aspecto anecóide e homogêneo{esp}.`, concl: `Sinais de {grau|c} derrame articular{esp|c}.` },
       ]),
     ]},
     { id: `${p}.lct`, titulo: 'Ligamento colateral tibial / medial', ordem: base + 1, controles: [
@@ -84,7 +84,7 @@ function criarSecoes(lado: typeof lados[number]): Secao[] {
       chk(`${p}.patelar.entesofito`, 'presença de entesófito', `Entesófito na inserção {local} do tendão patelar, medindo {mm|cm} cm.`, `Entesopatia do tendão patelar.`, [sel('local', 'localização', ops('proximal', 'distal')), mm('mm', 'medida', 10)], 20),
     ]},
     { id: `${p}.artrose`, titulo: 'Osteoartrose', ordem: base + 7, controles: [
-      chk(`${p}.artrose.on`, 'presente', 'Irregularidades corticais associadas a osteófitos marginais, nas articulações fêmur-tibial e fêmur-fibular.', 'Sinais de gonartrose.'),
+      chk(`${p}.artrose.on`, 'presente', 'Presença de irregularidades corticais associadas a osteófitos marginais.', 'Sinais de gonartrose.'),
     ]},
     { id: `${p}.cistos`, titulo: 'Cistos', ordem: base + 8, controles: [
       chk(`${p}.cisto-baker`, 'cisto de Baker', `Cisto de Baker, medindo {a|cm} x {b|cm} x {c|cm} cm, com {paredes}, {conteudo} e {contornos}.`, `Cisto de Baker.`, [mm('a', 'medida 1', 10), mm('b', 'medida 2', 10), mm('c', 'medida 3', 10), sel('paredes', 'paredes', ops('paredes finas', 'paredes espessadas')), sel('conteudo', 'conteúdo', ops('conteúdo líquido', 'conteúdo líquido com debris')), sel('contornos', 'contornos', ops('contornos regulares', 'contornos lobulados'))], 10),

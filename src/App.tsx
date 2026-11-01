@@ -57,10 +57,10 @@ export default function App() {
 
   const dataExame = cab.data;
   const cabecalho = [
-    cab.pac && `NOME: ${cab.pac}`,
-    cab.nasc && `DATA DE NASCIMENTO: ${cab.nasc}`,
-    cab.med && `MÉDICO SOLICITANTE: ${cab.med}`,
-    dataExame && `DATA DO EXAME: ${dataExame}`,
+    cab.pac && `Paciente: ${cab.pac}`,
+    cab.nasc && `Data de nascimento: ${cab.nasc}`,
+    cab.med && `Médico solicitante: ${cab.med}`,
+    dataExame && `Data do exame: ${dataExame}`,
   ].filter(Boolean).join('\n');
 
   const off = useMemo(() => desativados(exame, resp), [exame, resp]);

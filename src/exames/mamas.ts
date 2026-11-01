@@ -5,6 +5,7 @@
 import type { Campo, Check, Exame, Opc, Secao } from '../tipos';
 import { chk, dims, esc, fixo, mm, ops, sel } from './abdomeTotal';
 
+const GINECO = ['presente, BILATERAL', 'presente, à DIREITA', 'presente, à ESQUERDA'].map((o) => `ma.gin.tipo=${o}`); // ginecomastia: sem composição/BI-RADS
 const radio = (id: string, opcoes: Opc[], extra = {}) => esc(id, 'radio', opcoes, extra);
 
 const HORAS = [...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((h) => ops(h === 1 ? 'à 1 hora' : `às ${h} horas`)[0]), ...ops('retroareolar')];
@@ -43,8 +44,8 @@ const geral: Secao = {
       { r: 'ecotextura de fundo homogênea – adiposa', corpo: 'A composição mamária apresenta ecotextura de fundo homogênea com predomínio adiposo.' },
       { r: 'ecotextura de fundo heterogênea (áreas adiposas + áreas fibroglandulares)', corpo: 'A composição mamária apresenta ecotextura de fundo heterogênea, entremeando áreas adiposas com áreas de tecido fibroglandular.' },
       { r: 'ecotextura genérica', corpo: 'Observa-se distribuição habitual do estroma fibroglandular e do tecido adiposo.' },
-    ], { ordem: 10, rotulo: 'Composição da mama' }),
-    esc('ma.birads', 'select', ops('1', '2', '3', '4A', '4B', '4C', '5', '6', '0'), { ordem: 30, rotulo: 'BI-RADS®' }),
+    ], { ordem: 10, rotulo: 'Composição da mama', desativadoPor: GINECO }),
+    esc('ma.birads', 'select', ops('1', '2', '3', '4A', '4B', '4C', '5', '6', '0'), { ordem: 30, rotulo: 'BI-RADS®', desativadoPor: GINECO }),
   ],
 };
 
@@ -82,7 +83,7 @@ const cirurgias: Secao = {
 // ---------- Cistos ----------
 const CONT: Opc[] = [{ r: 'anecogênico' }, { r: 'espesso' }];
 const cisto = (n: number): Check =>
-  chk(`ma.cisto${n}`, `cisto de conteúdo`, '', undefined, [sel('cont', '', CONT), mm('mm', 'medindo (mm)', 4), ...onde()], n * 10);
+  chk(`ma.cisto${n}`, `cisto de conteúdo`, '', undefined, [sel('cont', '', CONT), mm('mm', 'medindo (cm)', 4), ...onde()], n * 10);
 const cistos: Secao = {
   id: 'ma.cistos', titulo: 'Cistos', ordem: 20,
   bilateral: [{ base: 'Cisto simples', resultado: 'Cistos simples bilaterais.' }, { base: 'Cisto de conteúdo espesso', resultado: 'Cistos de conteúdo espesso bilaterais.' }],
@@ -90,11 +91,11 @@ const cistos: Secao = {
     ...[1, 2, 3, 4].map(cisto),
     fixo('ma.cistxt', '{=mcist}', { ordem: 5, concl: '{=mcistconcl}' }),
     chk('ma.micro', 'agrupamento de microcistos', 'Agrupamento de microcistos anecogênicos, medindo até {mm|cm} cm, localizado {=mloc:ma.micro}.', 'Microcistos agrupados {lado|c}.',
-      [mm('mm', 'medindo (mm)', 4), ...onde()], 50),
+      [mm('mm', 'medindo (cm)', 4), ...onde()], 50),
     chk('ma.multi', 'múltiplos cistos simples',
       'São identificados vários cistos anecogênicos de contornos regulares e paredes finas, {dist}, medindo até {mm|cm} cm, o maior deles localizado {=mloc:ma.multi}.', 'Cistos simples {dist|c}.',
       [sel('dist', 'distribuição', [{ r: 'bilaterais', t: 'bilaterais', c: 'bilaterais' }, { r: 'à direita', t: 'na mama direita', c: 'à direita' }, { r: 'à esquerda', t: 'na mama esquerda', c: 'à esquerda' }]),
-        mm('mm', 'de até (mm), o maior deles', 10), ...onde()], 60),
+        mm('mm', 'de até (cm), o maior deles', 10), ...onde()], 60),
   ],
 };
 
@@ -131,7 +132,7 @@ const gineco: Secao = {
 // ---------- Nódulos sólidos (texto e ID montados por mamasCalc.ts) ----------
 const nodulo = (n: number): Check => {
   const campos: Campo[] = [
-    dims('med', 'mede (mm)', 3, 10),
+    dims('med', 'mede (cm)', 3, 10),
     sel('sit', 'distância', [{ r: 'não citar distância ao mamilo e à pele' }, { r: 'citar distância ao mamilo e à pele' }]),
     mm('mam', 'mm do mamilo', 10), mm('pele', 'mm da pele', 10),
     ...onde(),
@@ -150,7 +151,7 @@ const nodulos: Secao = {
     fixo('ma.nodtxt', '{=mnod}', { ordem: 10, concl: '{=mnodconcl}' }),
     chk('ma.nodm', 'descrever múltiplos nódulos sólidos',
       'Presença de múltiplos nódulos sólidos {eco}, {forma}, bilaterais, medindo até {d|cm} cm à direita e {e|cm} cm à esquerda{orient}{acus}.', 'Múltiplos nódulos sólidos bilaterais.',
-      [mm('d', 'medindo até (mm) à direita', 10), mm('e', 'mm à esquerda', 10),
+      [mm('d', 'medindo até (cm) à direita', 10), mm('e', 'cm à esquerda', 10),
         sel('eco', 'ecogenicidade', ops('hipoecogênicos', 'isoecogênicos', 'hiperecogênicos')),
         sel('forma', 'forma e margens', ops('ovais, circunscritos', 'ovais, indistintos', 'irregulares')),
         sel('orient', 'orientação espacial', [{ r: 'não citar orientação', t: '' }, { r: 'paralela à pele', t: ', de orientação paralela à pele' }, { r: 'não paralela à pele', t: ', de orientação não paralela à pele' }]),
@@ -170,9 +171,9 @@ const axilas: Secao = {
   controles: [radio('ma.ax.tipo', [
     { r: 'ausência de linfonodomegalias', corpo: 'Ausência de linfonodomegalias axilares.' },
     { r: 'linfonodos normais', corpo: 'Presença de linfonodos axilares de aspecto habitual.' },
-    { r: 'linfonodomegalia isolada', campos: [sel('lado', 'lado', MAMA.map((o) => ({ ...o, t: o.c }))), sel('asp', 'aspecto', ASP), dims('med', 'medindo (mm)', 3, [25, 20, 15])],
+    { r: 'linfonodomegalia isolada', campos: [sel('lado', 'lado', MAMA.map((o) => ({ ...o, t: o.c }))), sel('asp', 'aspecto', ASP), dims('med', 'medindo (cm)', 3, [25, 20, 15])],
       corpo: 'Linfonodomegalia axilar {lado}, {asp}, medindo {med} cm.', concl: 'Linfonodomegalia axilar {lado|c}.' },
-    { r: 'linfonodomegalias bilaterais, a maior situada', campos: [sel('lado', 'a maior situada', MAMA.map((o) => ({ ...o, t: o.c }))), sel('asp', 'aspecto', ASP), dims('med', 'medindo a maior (mm)', 3, [25, 20, 15])],
+    { r: 'linfonodomegalias bilaterais, a maior situada', campos: [sel('lado', 'a maior situada', MAMA.map((o) => ({ ...o, t: o.c }))), sel('asp', 'aspecto', ASP), dims('med', 'medindo a maior (cm)', 3, [25, 20, 15])],
       corpo: 'Linfonodomegalias axilares bilaterais, a maior situada {lado}, {asp}, medindo {med} cm.', concl: 'Linfonodomegalias axilares bilaterais.' },
     { r: 'não citar axilas' },
   ])],

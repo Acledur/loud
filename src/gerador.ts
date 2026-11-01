@@ -140,7 +140,21 @@ function sufixoOm(r: Resp, k: string): string | null {
 const ILA_MIN = 8, ILA_MAX = 24;
 const ilaVal = (r: Resp, a = '') => ({ raw: String(r[a] ?? '').trim(), v: num(r[a]) });
 
+/** Tendinopatia sem rotura: supra e infraespinhal juntos numa frase só quando ambos estão assim. */
+const calcOm = (r: Resp, k: string) => {
+  const c = String(r[`om.${k}.tipo.calc`] ?? '');
+  if (c.startsWith('com pequenas')) return ' Notam-se pequenas calcificações junto à inserção.';
+  if (c.startsWith('com calcificação')) return ` Nota-se calcificação junto à inserção, medindo ${fmtCm(num(r[`om.${k}.tipo.cal`]))} cm.`;
+  return '';
+};
+const tendpat = (r: Resp, k: string): string => {
+  const par = tipoOm(r, 'sup') === 'tendinopatia sem rotura' && tipoOm(r, 'inf') === 'tendinopatia sem rotura';
+  if (par) return k === 'sup' ? `Tendões do supraespinhal e infraespinhal espessados, com alteração ecotextural, sem evidências de rotura.${calcOm(r, 'sup')}${calcOm(r, 'inf')}` : '';
+  return `Tendão do ${k === 'sup' ? 'supraespinhal' : k === 'inf' ? 'infraespinhal' : 'subescapular'} espessado, com alteração ecotextural, sem evidências de rotura.${calcOm(r, k)}`;
+};
+
 const CALCULOS: Record<string, (r: Resp, arg?: string) => string> = {
+  tendpat: (r, a = '') => tendpat(r, a),
   ...calculosMama,
   ...calculosCotovelo,
   ila: (r, a) => {
@@ -222,10 +236,24 @@ const CALCULOS: Record<string, (r: Resp, arg?: string) => string> = {
     return `Ovário ${lado} não caracterizado. Região anexial ${lado === 'direito' ? 'direita' : 'esquerda'} sem evidências de massas ou coleções.`;
   },
   ovaumentado: (r, a = '') => { const v = volDe(r, `${a}.estado.med`); return v !== null && v > LIMITE_OVARIO_CM3 ? ' aumentado' : ''; },
-  ovconcl: (r, a = '') => { const v = volDe(r, `${a}.estado.med`); return v !== null && v > LIMITE_OVARIO_CM3 ? `Ovário ${a.replace('ov', '')} com volume aumentado.` : ''; },
+  ovconcl: (r, a = '') => {
+    const comCisto = (x: string) => r[`${x}.cisto1`] === true || r[`${x}.cisto2`] === true;
+    const aum = (x: string) => { const v = volDe(r, `${x}.estado.med`); return v !== null && v > LIMITE_OVARIO_CM3; };
+    if (comCisto(a) || !aum(a)) return '';
+    const outro = a === 'ovdireito' ? 'ovesquerdo' : 'ovdireito';
+    if (aum(outro) && !comCisto(outro)) return a === 'ovdireito' ? 'Ovários homogêneos com volumes aumentados.' : '';
+    return `Ovário ${a.replace('ov', '')} com volume aumentado.`;
+  },
+  ovmf: (r, a = '') => {
+    const mf = (x: string) => r[`${x}.estado`] === 'padrão multifolicular';
+    const outro = a === 'ovdireito' ? 'ovesquerdo' : 'ovdireito';
+    if (mf(outro)) return a === 'ovdireito' ? 'Ovários com padrão multifolicular.' : '';
+    return `Ovário ${a.replace('ov', '')} com padrão multifolicular.`;
+  },
   voltireoide: (r) => { const v = volTireoide(r); return v === null ? '[PREENCHER]' : um(v); },
   refvol: (r) => { const f = REF_VOL_TIREOIDE[String(r['tireoide.sexo'])]; return f ? `${um(f[0])} a ${um(f[1])}` : '[PREENCHER]'; },
   dimtireoide: (r) => {
+    if (r['tmed.on'] !== true) return 'preservadas';
     const v = volTireoide(r);
     const f = REF_VOL_TIREOIDE[String(r['tireoide.sexo'])];
     if (v === null) return '[PREENCHER: dimensões]';
@@ -429,7 +457,7 @@ export function gerarLaudo(ex: Exame, r: Resp, opts: { cabecalho?: string; rodap
   const rod = lista(opts.rodape);
   const vazia: Linha = { t: '', a: 'left' };
   const linhas: Linha[] = [];
-  cab.forEach((t) => linhas.push({ t, a: 'left', b: true }));            // cabeçalho: esquerda, negrito
+  cab.forEach((t) => linhas.push({ t, a: 'left', b: true, s: true }));            // cabeçalho (fonte menor): esquerda, negrito
   if (cab.length) linhas.push(vazia, vazia);
   const titulo = ex.tituloDop && ex.tituloDop.ctls.some((c) => r[c] === true) ? ex.tituloDop.titulo : ex.tituloVar ? (ex.tituloVar.opcoes[String(r[ex.tituloVar.ctl])] ?? ex.tituloLaudo) : ex.tituloLaudo;
   linhas.push({ t: titulo, a: 'center', b: true }, vazia);        // título: centralizado, negrito
@@ -438,7 +466,7 @@ export function gerarLaudo(ex: Exame, r: Resp, opts: { cabecalho?: string; rodap
   const obsMetodo = paragrafos.filter((t) => t.startsWith('Obs.:'));
   if (obsMetodo.length) linhas.push(vazia, ...obsMetodo.map((t): Linha => ({ t, a: 'justify' })));
   linhas.push(vazia, { t: 'ID:', a: 'left', b: true });                   // "ID:" em negrito
-  const fim = (ex.fim ?? []).map((t) => t.replace(/\{=val:([\w.]+)\}/g, (_, k: string) => String(r[k] ?? '')));
+  const fim = (ex.fim ?? []).filter((t) => ![...t.matchAll(/\{=val:([\w.]+)\}/g)].some((m) => off.has(m[1]))).map((t) => t.replace(/\{=val:([\w.]+)\}/g, (_, k: string) => String(r[k] ?? '')));
   [...id, ...fim].forEach((t) => linhas.push({ t, a: 'justify' }));
   if (ex.obs?.length) linhas.push(vazia, ...ex.obs.map((t): Linha => ({ t, a: 'justify' })));
   if (rod.length) linhas.push(vazia, vazia, vazia, vazia, vazia, ...rod.map((t): Linha => ({ t, a: 'left', b: true }))); // rodapé: esquerda, negrito

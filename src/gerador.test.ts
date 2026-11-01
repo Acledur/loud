@@ -161,7 +161,7 @@ describe('casos de referência', () => {
 describe('cabeçalho, rodapé e formatação', () => {
   const g = gerarLaudo(ex, respInicial(ex), { cabecalho: 'Paciente: Fulano\nMédico solicitante: Dr. X', rodape: 'Dr. Y\nCRM 1' });
   it('cabeçalho à esquerda e em negrito; título centralizado; rodapé à esquerda', () => {
-    expect(g.linhas.slice(0, 2)).toEqual([{ t: 'Paciente: Fulano', a: 'left', b: true }, { t: 'Médico solicitante: Dr. X', a: 'left', b: true }]);
+    expect(g.linhas.slice(0, 2)).toEqual([{ t: 'Paciente: Fulano', a: 'left', b: true, s: true }, { t: 'Médico solicitante: Dr. X', a: 'left', b: true, s: true }]);
     expect(g.linhas.find((l) => l.t.startsWith('ULTRASSONOGRAFIA'))).toEqual({ t: 'ULTRASSONOGRAFIA DO ABDOME TOTAL', a: 'center', b: true });
     expect(g.linhas.find((l) => l.t === 'ID:')).toEqual({ t: 'ID:', a: 'left', b: true });
     expect(g.linhas.slice(-2)).toEqual([{ t: 'Dr. Y', a: 'left', b: true }, { t: 'CRM 1', a: 'left', b: true }]);
@@ -415,15 +415,15 @@ describe('joelho (seletor de lado)', () => {
   it('esquerdo: título e frases do lado esquerdo', () => {
     const t = gj({ 'jo.lado': 'esquerdo', 'e.derrame.tipo': 'presente', 'e.derrame.tipo.grau': 'moderado' });
     expect(t).toContain('ULTRASSONOGRAFIA DO JOELHO ESQUERDO');
-    expect(t).toContain('Derrame articular, em quantidade moderado.');
-    expect(t).toContain('Derrame articular.');
+    expect(t).toContain('Moderado derrame articular na topografia supra-patelar com aspecto anecóide e homogêneo.');
+    expect(t).toContain('Sinais de moderado derrame articular.');
     expect(t).not.toContain('joelho direito');
   });
   it('derrame com espessamento sinovial e osteoartrose', () => {
     const t = gj({ 'd.derrame.tipo': 'presente', 'd.derrame.tipo.grau': 'moderado', 'd.derrame.tipo.esp': 'sim', 'd.artrose.on': true });
-    expect(t).toContain('Derrame articular, em quantidade moderado, associado a espessamento sinovial.');
-    expect(t).toContain('Derrame articular, associado a espessamento sinovial.');
-    expect(t).toContain('Irregularidades corticais associadas a osteófitos marginais, nas articulações fêmur-tibial e fêmur-fibular.');
+    expect(t).toContain('Moderado derrame articular na topografia supra-patelar com aspecto anecóide e homogêneo, associado a espessamento sinovial.');
+    expect(t).toContain('Sinais de moderado derrame articular, associado a espessamento sinovial.');
+    expect(t).toContain('Presença de irregularidades corticais associadas a osteófitos marginais.');
     expect(t).toContain('Sinais de gonartrose.');
   });
   it('títulos das caixas sem o lado', () => {
@@ -675,7 +675,8 @@ describe('obstétrica', () => {
     expect(t).toContain('Ausência de imagens sugestivas de descolamento.');
     expect(t).toContain('Líquido amniótico em quantidade adequada para a atual fase gestacional.');
     expect(t).not.toContain('DOPPLER');
-    expect(t).toContain('ID:\nGestação tópica, com feto único e vivo, com idade gestacional estimada em torno de 32 semanas e 1 dias (variação de +/- 1,0 semana).\n\nOBS');
+    expect(t).toContain('ID:\nGestação tópica, com feto único e vivo, com idade gestacional estimada em torno de 32 semanas e 1 dias (variação de +/- 1,0 semana).\n\nEste exame');
+    expect(t).not.toContain('OBS: EM CASO DE RETORNO');
   });
   it('ILA: referência 8–24, oligoâmnio e polidrâmnio', () => {
     const il = (v: string) => g2({ 'ob2.ig.sem': '30', 'ob2.ig.dias': '0', 'ob2.la.ila': v });
@@ -792,8 +793,8 @@ describe('partes moles', () => {
   });
   it('lipoma e cisto', () => {
     const t = gp({ 'pm.lipoma': true, 'pm.lipoma.reg': 'dorsal', 'pm.lipoma.cont': 'lobulados' });
-    expect(t).toContain('Na alteração palpável da região dorsal, caracteriza-se nos planos do subcutâneo, formação nodular sólida, de contornos lobulados, isoecogênica ao tecido adiposo, medindo 1,0 x 1,0 x 1,0 cm (L x AP x T), distando 0,5 cm da pele.');
-    expect(t).toContain('Formação nodular em partes superficiais, sugestivo de lipoma ou suas variantes histológicas.');
+    expect(t).toContain('Na alteração palpável da região dorsal, caracteriza-se nos planos do subcutâneo, formação nodular sólida, de contornos lobulados, isoecogênica ao tecido adiposo, medindo 1,0 x 1,0 x 1,0 cm.');
+    expect(t).toContain('Formação nodular em partes superficiais, sugestiva de lipoma ou suas variantes histológicas.');
     expect(t).not.toContain('Ausência de nódulos');
     const c = gp({ 'pm.cisto': true, 'pm.cisto.reg': 'dorsal' });
     expect(c).toContain('que mede 1,0 x 1,0 x 1,0 cm, na região dorsal. A hipótese de cisto epidermóide deve ser considerada.');

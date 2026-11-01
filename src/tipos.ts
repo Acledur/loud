@@ -118,4 +118,4 @@ export type Exame = {
 export type Resp = Record<string, string | number | boolean>;
 
 /** Uma linha do laudo já formatada. */
-export type Linha = { t: string; a: 'left' | 'center' | 'right' | 'justify'; b?: boolean };
+export type Linha = { t: string; a: 'left' | 'center' | 'right' | 'justify'; b?: boolean; s?: boolean };

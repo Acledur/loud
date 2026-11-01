@@ -1,8 +1,26 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import type { Campo, Controle, Resp, Secao } from '../tipos';
 import { medidas, oid, volumeMl } from '../gerador';
 
 export type Setter = (k: string, v: string | number | boolean) => void;
+
+const paraCm = (mm: unknown) => { const n = Number(String(mm ?? '').replace(',', '.')); return String(mm ?? '') === '' || !Number.isFinite(n) ? '' : String(Number((n / 10).toFixed(3))); };
+/** Campo digitado em cm; internamente o valor continua em mm (o laudo já sai em cm). */
+function CmInput({ value, onChange }: { value: unknown; onChange: (mm: string) => void }) {
+  const [txt, setTxt] = useState(paraCm(value));
+  useEffect(() => {
+    const a = Number(txt.replace(',', '.')), b = Number(String(value ?? '').replace(',', '.'));
+    if (!(Number.isFinite(a) && Math.abs(a * 10 - b) < 1e-6) && !(txt === '' && String(value ?? '') === '')) setTxt(paraCm(value));
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <input type="number" min={0} step="any" value={txt}
+      onChange={(e) => {
+        setTxt(e.target.value);
+        const n = Number(e.target.value.replace(',', '.'));
+        onChange(e.target.value !== '' && Number.isFinite(n) ? String(Number((n * 10).toFixed(3))) : '');
+      }} />
+  );
+}
 
 function CampoUI({ c, pre, resp, set }: { c: Campo; pre: string; resp: Resp; set: Setter }) {
   const k = `${pre}.${c.id}`;
@@ -14,10 +32,9 @@ function CampoUI({ c, pre, resp, set }: { c: Campo; pre: string; resp: Resp; set
       <label className="campo">
         <span>{c.rotulo}</span>
         {Array.from({ length: n }, (_, i) => (
-          <input key={i} type="number" min={0} step="any" value={String(resp[`${k}.${i + 1}`] ?? '')}
-            onChange={(e) => set(`${k}.${i + 1}`, e.target.value)} />
+          <CmInput key={i} value={resp[`${k}.${i + 1}`]} onChange={(x) => set(`${k}.${i + 1}`, x)} />
         ))}
-        <em>mm</em>
+        <em>cm</em>
         {m && n === 3 && !c.opc && <em>≈ {volumeMl(m).toFixed(1).replace('.', ',')} ml</em>}
       </label>
     );
@@ -33,14 +50,10 @@ function CampoUI({ c, pre, resp, set }: { c: Campo; pre: string; resp: Resp; set
         </select>
       ) : (
         <>
-          <input
-            type={c.tipo === 'mm' ? 'number' : 'text'}
-            min={c.tipo === 'mm' ? 0 : undefined}
-            step="any"
-            value={v}
-            onChange={(e) => set(k, e.target.value)}
-          />
-          {c.tipo === 'mm' && <em>mm</em>}
+          {c.tipo === 'mm' ? <CmInput value={resp[k]} onChange={(x) => set(k, x)} /> : (
+            <input type="text" step="any" value={v} onChange={(e) => set(k, e.target.value)} />
+          )}
+          {c.tipo === 'mm' && <em>cm</em>}
         </>
       )}
     </label>

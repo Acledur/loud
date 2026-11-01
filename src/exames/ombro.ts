@@ -22,7 +22,7 @@ const retracao = (): Opc[] => [
   { r: 'sem retração', t: '', c: '' },
   { r: 'com retração', t: ', com retração de {ret|cm} cm', c: ', com retração' },
 ];
-const campoRet = () => [mm('int', 'intervalo (mm)', 10), sel('retr', 'retração', retracao()), mm('ret', 'retração de (mm)', 10)];
+const campoRet = () => [mm('int', 'intervalo (cm)', 10), sel('retr', 'retração', retracao()), mm('ret', 'retração de (cm)', 10)];
 const TIPO_PARCIAL: Opc[] = [
   { r: 'não citar tipo', t: '' },
   { r: 'bursal', t: ' bursal' },
@@ -44,11 +44,11 @@ const secaoTendao = (t: typeof TENDOES[number], i: number): Secao => {
     controles: [
       esc(ID(k, 'tipo'), [
         { r: 'aspecto normal' },
-        { r: 'tendinopatia sem rotura', campos: [sel('calc', 'calcificações', CALC), mm('cal', 'tamanho da calcificação (mm)', 5)],
-          corpo: `${tit} espessado, com alteração ecotextural, sem evidências de rotura.{calc}`, concl },
+        { r: 'tendinopatia sem rotura', campos: [sel('calc', 'calcificações', CALC), mm('cal', 'tamanho da calcificação (cm)', 5)],
+          corpo: `{=tendpat:${k}}`, concl },
         { r: 'fissuras intrassubstanciais',
           corpo: `Espessamento e hipoecogenicidade do tendão do ${nome}, com algumas fissuras intrassubstanciais, sem transfixação.`, concl },
-        { r: 'rotura parcial medindo', campos: [dims('med', 'medidas (mm)', 2, 10), sel('tp', 'tipo', TIPO_PARCIAL)],
+        { r: 'rotura parcial medindo', campos: [dims('med', 'medidas (cm)', 2, 10), sel('tp', 'tipo', TIPO_PARCIAL)],
           corpo: `${tit} ${alt} rotura parcial{tp} medindo {med} cm.`, concl },
         { r: 'rotura completa', campos: campoRet(),
           corpo: `${tit} ${alt} rotura completa com {int|cm} cm de intervalo{retr}.`, concl },
@@ -69,7 +69,7 @@ const biceps: Secao = {
     esc('om.bic.tipo', [
       { r: 'aspecto normal', corpo: `${BICEPS} ${NORMAL}.` },
       { r: 'tendinopatia sem rotura', corpo: `${BICEPS} espessado, com alteração ecotextural, sem evidências de rotura.`, concl: 'Tendinopatia da cabeça longa do bíceps braquial.' },
-      { r: 'rotura parcial medindo', campos: [dims('med', 'medidas (mm)', 2, 10)],
+      { r: 'rotura parcial medindo', campos: [dims('med', 'medidas (cm)', 2, 10)],
         corpo: `${BICEPS} com sinais de rotura parcial medindo {med} cm.`, concl: 'Rotura parcial do tendão da cabeça longa do bíceps braquial.' },
       { r: 'rotura completa', campos: campoRet(),
         corpo: `${BICEPS} com sinais de rotura completa, com {int|cm} cm de intervalo{retr}.`, concl: 'Rotura completa do tendão da cabeça longa do bíceps braquial.' },
